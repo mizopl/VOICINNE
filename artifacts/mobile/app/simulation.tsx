@@ -178,11 +178,12 @@ export default function SimulationScreen() {
             style={[
               styles.progressBarFill,
               {
-                width: `${progressFraction * 100}%` as any,
+                flex: progressFraction,
                 backgroundColor: progressFraction > 0.8 ? '#ef4444' : colors.primary,
               },
             ]}
           />
+          <View style={{ flex: 1 - progressFraction }} />
         </View>
       </View>
 
@@ -263,9 +264,9 @@ const styles = StyleSheet.create({
     height: 6,
     borderRadius: 3,
     overflow: 'hidden',
+    flexDirection: 'row',
   },
   progressBarFill: {
-    height: 6,
     borderRadius: 3,
   },
   bottomSection: {

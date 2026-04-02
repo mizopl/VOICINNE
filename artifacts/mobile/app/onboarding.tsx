@@ -5,7 +5,6 @@ import React, { useRef, useState } from 'react';
 import {
   Animated,
   Platform,
-  PressEvent,
   StyleSheet,
   Text,
   TouchableOpacity,

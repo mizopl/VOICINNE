@@ -1,8 +1,12 @@
-# Voicinne — Current State (Iteration 1)
+# Voicinne — Current State (Iteration 2)
 
 ## What Was Built
 
-Iteration 1 establishes the complete UI scaffold for **Voicinne**, an educational deep fake awareness mobile app built with Expo + Expo Router.
+### Iteration 1 — UI Scaffold
+Established the complete UI scaffold for **Voicinne**, an educational deep fake awareness mobile app built with Expo + Expo Router.
+
+### Iteration 2 — Audio Recording + API Stubs
+Added real microphone recording via `expo-av`, a typed API client stub layer, and a processing pipeline screen on onboarding completion.
 
 ---
 
@@ -11,124 +15,104 @@ Iteration 1 establishes the complete UI scaffold for **Voicinne**, an educationa
 - **Framework**: React Native with Expo SDK (Expo Router for navigation)
 - **Language**: TypeScript
 - **Styling**: Vanilla React Native StyleSheet (no Tailwind)
-- **State**: Context API (`LanguageContext`)
+- **State**: Context API (`LanguageContext`) + local `useState`/`useRef` hooks
 - **Navigation**: Stack-based (no tabs) — `index → onboarding → simulation`
 - **Theme**: Dark mode (`userInterfaceStyle: "dark"`), high-contrast cyan/charcoal palette
+- **Audio**: `expo-av` — real microphone capture with iOS/Android permission handling
 
 ---
 
-## Files Created
+## Files
 
 ### `contexts/LanguageContext.tsx`
-Central language management context. Supports 6 languages with full translation dictionaries:
+Central language management context. Supports 6 languages (ENG, POL, SPA, GER, FRA, ITA) with full translation dictionaries.
 
-| Code | Language |
-|------|----------|
-| ENG | English |
-| POL | Polski |
-| SPA | Español |
-| GER | Deutsch |
-| FRA | Français |
-| ITA | Italiano |
-
-**Translated keys per language:**
-- `appTitle` — "Voicinne"
-- `appSubtitle` — Deep fake awareness tagline
-- `startButton` — "Start Experiment"
-- `question1–6` — 6 interview questions:
-  - "How does she call you?"
-  - "What does she mean to you?"
-  - "How do you call her?"
-  - "What will she ask?"
-  - "What will you answer?"
-  - "What can you ask her?"
-- Additional UI strings (recording, next, timer labels, reveal text, safe word prompt)
-
-**Exports**: `LanguageProvider`, `useLanguage()`, `LANGUAGE_LABELS`, `QUESTIONS_KEYS`, `Language` type
+**Iteration 2 additions — 3 new keys per language (18 new strings total):**
+- `processingVoice` — "Processing voice profile..." (shown during API pipeline)
+- `micPermissionTitle` — Alert title for microphone permission denied
+- `micPermissionDenied` — Alert body explaining how to enable mic in Settings
 
 ---
 
 ### `app/index.tsx` — Home Screen
-- **Design**: Full dark-mode, high-contrast, accessible for older adults
-- **Elements**:
-  - Voicinne title with microphone icon ring
-  - App subtitle
-  - Massive "Start Experiment" button (CTA) — navigates to `/onboarding`
-  - Language selector button — opens bottom sheet modal with all 6 language options
-  - Warning disclaimer box at bottom
-- **Accessibility**: Font sizes 17–48pt, strong contrast, large tap targets
+No changes in Iteration 2.
 
 ---
 
-### `app/onboarding.tsx` — Interview Flow Screen
-- **Flow**: Shows one question at a time, cycles through all 6
-- **Elements**:
-  - Back button + progress indicator (dots, animated active state)
-  - Question counter (X / 6)
-  - Large question text (32pt bold)
-  - Animated "Hold to Record" button (press-and-hold mockup — no real audio)
-    - Pulses while recording
-    - Turns red during active recording state
-    - Shows "Recorded" badge after release
-  - "Next" button appears only after recording (mockup)
-  - Last question's "Next" becomes "Begin Experiment" → navigates to `/simulation`
+### `app/onboarding.tsx` — Interview Flow Screen (REWRITTEN Iteration 2)
+**Real Audio Recording via `expo-av`:**
+- `handleRecordStart` — calls `Audio.requestPermissionsAsync()` before starting. If denied, shows an `Alert` with `t.micPermissionTitle` / `t.micPermissionDenied`. On grant, calls `Audio.setAudioModeAsync({ allowsRecordingIOS: true, playsInSilentModeIOS: true })` then `Audio.Recording.createAsync(HIGH_QUALITY)`.
+- `handleRecordEnd` — stops and unloads the recording, reads the URI via `getURI()`, resets `allowsRecordingIOS: false`, stores the URI into `recordedUris` state array at the current question index.
+- `recordedUris: string[]` — array of local file URIs, one per question, grown as the user progresses.
+- `recordingRef: MutableRefObject<Audio.Recording | null>` — holds the live Recording instance.
+
+**Processing Pipeline:**
+- After the 6th question's "Begin Experiment" is pressed, `runProcessingPipeline(recordedUris)` is called.
+- Sets `isProcessing: true` — renders a full-screen `ActivityIndicator` + `t.processingVoice` text instead of the question UI (`testID="processing-view"`).
+- Calls the three API stubs **sequentially**: `transcribeAudio` → `generatePersona` → `cloneVoice`.
+- On success, navigates to `/simulation`. On error, resets `isProcessing` so the user can retry.
 
 ---
 
 ### `app/simulation.tsx` — Simulation Screen
-- **Elements**:
-  - 3-minute countdown timer (large, pulsing ring)
-    - Timer turns red when under 20% time remaining
-  - Progress bar showing elapsed time
-  - Info box explaining the simulation
-  - Prominent red "Reveal Experiment" button
-- **On Reveal**:
-  - Timer stops
-  - Screen transitions to full-screen reveal view (dark, high-contrast)
-  - Shows: "Deep Fake Revealed" title + educational message + safety word prompt
-  - "Back to Home" button
-- **Auto-reveal**: Timer auto-triggers reveal when it hits 0:00
+No changes in Iteration 2.
+
+---
+
+### `utils/apiClient.ts` — API Client Stubs (NEW Iteration 2)
+Three async stub functions simulating the planned backend API calls. Each introduces a ~1.2s mock delay.
+
+| Function | Signature | Returns |
+|---|---|---|
+| `transcribeAudio` | `(localUris: string[]) => Promise<string>` | Mock transcription text |
+| `generatePersona` | `(transcription: string) => Promise<Record<string, unknown>>` | Mock persona JSON |
+| `cloneVoice` | `(localUris: string[]) => Promise<string>` | Fake `voice_id` string |
+
+**Architecture Note** (documented in file): In production, API keys (ElevenLabs, Gemini) live exclusively server-side. This client calls our own backend endpoints only — never third-party APIs directly.
 
 ---
 
 ### `constants/colors.ts` — Design Tokens
-Full dark + light palette:
-- **Background**: `#0a0a0a` (dark), `#f5f5f5` (light)
-- **Primary**: `#00b4d8` (cyan/teal)
-- **Foreground**: `#f0f0f0` (dark), `#0a0a0a` (light)
-- **Card**: `#141414` (dark), `#ffffff` (light)
-- **Destructive**: `#ef4444` (red — used for recording + reveal)
+Unchanged from Iteration 1.
+
+### `app.json` — Updated Iteration 2
+- Added `ios.infoPlist.NSMicrophoneUsageDescription` — required for App Store mic permission.
+- Added `android.permissions: ["android.permission.RECORD_AUDIO"]` — required for Android recording.
+
+### `app/_layout.tsx`
+Unchanged from Iteration 1.
 
 ---
 
-### `app/_layout.tsx` — Updated
-- Removed tab navigation
-- Added `LanguageProvider` wrapping the Stack
-- Stack screens: `index`, `onboarding`, `simulation` (all `headerShown: false`)
+## Dependencies
 
-### `app.json` — Updated
-- `userInterfaceStyle: "dark"` — forced dark mode
-- Splash background: `#0a0a0a`
-- Custom AI-generated app icon
+| Package | Version | Added |
+|---|---|---|
+| `expo-av` | (resolved by Expo SDK 54) | Iteration 2 |
 
 ---
 
-## What Is NOT Implemented (Out of Scope for Iteration 1)
+## TypeScript
+✅ 0 errors across all files (`pnpm exec tsc --noEmit`)
 
-- ElevenLabs voice cloning API integration
-- Real audio recording (microphone capture)
+---
+
+## What Is NOT Implemented (Deferred to Future Iterations)
+
+- ElevenLabs voice cloning (real API call)
 - Gemini AI agent setup and call flow
+- Replit Serverless Backend (Express/Hono) — stub functions simulate its response
 - Safety word establishment logic
-- Any backend API endpoints or database
-- Authentication / user profiles
-- Persistence of recorded answers
+- User authentication / profiles
+- Persistence of recorded answers or persona data
 
 ---
 
-## Next Steps (Iteration 2+)
+## Next Steps (Iteration 3+)
 
-1. **Voice Recording** — Use `expo-av` to implement real microphone capture during the "Hold to Record" flow
-2. **ElevenLabs Integration** — Clone voice from recorded samples via ElevenLabs API
-3. **Gemini AI Agent** — Build the AI agent that uses the cloned voice + interview answers to mimic the user
-4. **Live Call Simulation** — Simulate a "call" to a relative using the agent
-5. **Safety Word Flow** — Post-reveal, guide both parties to establish and store a safety word
+1. **Replit Backend** — Build the Express/Hono API server with ElevenLabs + Gemini server-side integration
+2. **Real `transcribeAudio`** — POST audio files to backend → Whisper / Google STT
+3. **Real `generatePersona`** — POST transcription to backend → Gemini agent returns persona JSON
+4. **Real `cloneVoice`** — POST audio URIs to backend → ElevenLabs voice clone returns `voice_id`
+5. **Simulation Screen v2** — Play AI-generated audio using the cloned `voice_id`
+6. **Safety Word Flow** — Post-reveal, guide both parties to establish and store a safety word

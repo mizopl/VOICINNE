@@ -14,9 +14,14 @@
       "backgroundColor": "#0a0a0a"
     },
     "ios": {
-      "supportsTablet": false
+      "supportsTablet": false,
+      "infoPlist": {
+        "NSMicrophoneUsageDescription": "Voicinne needs microphone access to record your voice for the AI experiment."
+      }
     },
-    "android": {},
+    "android": {
+      "permissions": ["android.permission.RECORD_AUDIO"]
+    },
     "web": {
       "favicon": "./assets/images/icon.png"
     },

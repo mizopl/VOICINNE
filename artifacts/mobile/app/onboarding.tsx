@@ -1,8 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
+import { Audio } from 'expo-av';
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
 import React, { useRef, useState } from 'react';
 import {
+  ActivityIndicator,
+  Alert,
   Animated,
   Platform,
   StyleSheet,
@@ -14,6 +17,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { QUESTIONS_KEYS, useLanguage } from '@/contexts/LanguageContext';
 import { useColors } from '@/hooks/useColors';
+import { cloneVoice, generatePersona, transcribeAudio } from '@/utils/apiClient';
 
 const TOTAL_QUESTIONS = 6;
 
@@ -26,7 +30,10 @@ export default function OnboardingScreen() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isRecording, setIsRecording] = useState(false);
   const [hasRecorded, setHasRecorded] = useState(false);
+  const [recordedUris, setRecordedUris] = useState<string[]>([]);
+  const [isProcessing, setIsProcessing] = useState(false);
 
+  const recordingRef = useRef<Audio.Recording | null>(null);
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const pulseLoop = useRef<Animated.CompositeAnimation | null>(null);
 
@@ -51,18 +58,74 @@ export default function OnboardingScreen() {
     Animated.timing(pulseAnim, { toValue: 1, duration: 200, useNativeDriver: true }).start();
   };
 
-  const handleRecordStart = () => {
-    setIsRecording(true);
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    startPulse();
+  const handleRecordStart = async () => {
+    const { status, canAskAgain } = await Audio.requestPermissionsAsync();
+
+    if (status !== 'granted') {
+      if (!canAskAgain) {
+        Alert.alert(t.micPermissionTitle, t.micPermissionDenied);
+      } else {
+        Alert.alert(t.micPermissionTitle, t.micPermissionDenied);
+      }
+      return;
+    }
+
+    try {
+      await Audio.setAudioModeAsync({
+        allowsRecordingIOS: true,
+        playsInSilentModeIOS: true,
+      });
+
+      const { recording } = await Audio.Recording.createAsync(
+        Audio.RecordingOptionsPresets.HIGH_QUALITY
+      );
+      recordingRef.current = recording;
+
+      setIsRecording(true);
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      startPulse();
+    } catch {
+      Alert.alert(t.micPermissionTitle, t.micPermissionDenied);
+    }
   };
 
-  const handleRecordEnd = () => {
-    if (!isRecording) return;
-    setIsRecording(false);
-    setHasRecorded(true);
+  const handleRecordEnd = async () => {
+    if (!isRecording || !recordingRef.current) return;
+
     stopPulse();
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    setIsRecording(false);
+
+    try {
+      await recordingRef.current.stopAndUnloadAsync();
+      const uri = recordingRef.current.getURI();
+      recordingRef.current = null;
+
+      await Audio.setAudioModeAsync({ allowsRecordingIOS: false });
+
+      if (uri) {
+        setRecordedUris((prev) => {
+          const next = [...prev];
+          next[currentIndex] = uri;
+          return next;
+        });
+        setHasRecorded(true);
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      }
+    } catch {
+      recordingRef.current = null;
+    }
+  };
+
+  const runProcessingPipeline = async (uris: string[]) => {
+    setIsProcessing(true);
+    try {
+      const transcription = await transcribeAudio(uris);
+      await generatePersona(transcription);
+      await cloneVoice(uris);
+      router.push('/simulation');
+    } catch {
+      setIsProcessing(false);
+    }
   };
 
   const handleNext = () => {
@@ -71,9 +134,27 @@ export default function OnboardingScreen() {
       setCurrentIndex(currentIndex + 1);
       setHasRecorded(false);
     } else {
-      router.push('/simulation');
+      runProcessingPipeline(recordedUris);
     }
   };
+
+  if (isProcessing) {
+    return (
+      <View
+        style={[
+          styles.container,
+          styles.processingContainer,
+          { backgroundColor: colors.background, paddingTop: topPad, paddingBottom: bottomPad },
+        ]}
+        testID="processing-view"
+      >
+        <ActivityIndicator size="large" color={colors.primary} />
+        <Text style={[styles.processingText, { color: colors.foreground }]}>
+          {t.processingVoice}
+        </Text>
+      </View>
+    );
+  }
 
   return (
     <View
@@ -187,6 +268,16 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: 28,
+  },
+  processingContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 24,
+  },
+  processingText: {
+    fontSize: 20,
+    fontFamily: 'Inter_600SemiBold',
+    textAlign: 'center',
   },
   header: {
     flexDirection: 'row',

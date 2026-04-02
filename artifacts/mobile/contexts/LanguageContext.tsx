@@ -29,6 +29,9 @@ export interface Translations {
   safeWordPrompt: string;
   backToHome: string;
   aiDisclaimer: string;
+  processingVoice: string;
+  micPermissionTitle: string;
+  micPermissionDenied: string;
 }
 
 const TRANSLATIONS: Record<Language, Translations> = {
@@ -60,6 +63,9 @@ const TRANSLATIONS: Record<Language, Translations> = {
     safeWordPrompt: 'Establish a safety word with your loved ones.',
     backToHome: 'Back to Home',
     aiDisclaimer: 'This experiment uses AI voice cloning for educational purposes only.',
+    processingVoice: 'Processing voice profile...',
+    micPermissionTitle: 'Microphone Access Required',
+    micPermissionDenied: 'Voicinne needs microphone access to record your voice. Please enable it in Settings.',
   },
   POL: {
     appTitle: 'Voicinne',
@@ -89,6 +95,9 @@ const TRANSLATIONS: Record<Language, Translations> = {
     safeWordPrompt: 'Ustaw hasło bezpieczeństwa z bliskimi.',
     backToHome: 'Powrót do Domu',
     aiDisclaimer: 'Ten eksperyment używa klonowania głosu AI wyłącznie w celach edukacyjnych.',
+    processingVoice: 'Przetwarzanie profilu głosu...',
+    micPermissionTitle: 'Wymagany Dostęp do Mikrofonu',
+    micPermissionDenied: 'Voicinne potrzebuje dostępu do mikrofonu. Włącz go w Ustawieniach.',
   },
   SPA: {
     appTitle: 'Voicinne',
@@ -118,6 +127,9 @@ const TRANSLATIONS: Record<Language, Translations> = {
     safeWordPrompt: 'Establece una palabra de seguridad con tus seres queridos.',
     backToHome: 'Volver al Inicio',
     aiDisclaimer: 'Este experimento usa clonación de voz IA solo con fines educativos.',
+    processingVoice: 'Procesando perfil de voz...',
+    micPermissionTitle: 'Acceso al Micrófono Requerido',
+    micPermissionDenied: 'Voicinne necesita acceso al micrófono. Actívalo en Ajustes.',
   },
   GER: {
     appTitle: 'Voicinne',
@@ -147,6 +159,9 @@ const TRANSLATIONS: Record<Language, Translations> = {
     safeWordPrompt: 'Vereinbare ein Sicherheitswort mit deinen Angehörigen.',
     backToHome: 'Zurück zur Startseite',
     aiDisclaimer: 'Dieses Experiment nutzt KI-Stimmklonierung nur zu Bildungszwecken.',
+    processingVoice: 'Stimmprofil wird verarbeitet...',
+    micPermissionTitle: 'Mikrofonzugriff Erforderlich',
+    micPermissionDenied: 'Voicinne benötigt Mikrofonzugriff. Bitte aktiviere ihn in den Einstellungen.',
   },
   FRA: {
     appTitle: 'Voicinne',
@@ -176,6 +191,9 @@ const TRANSLATIONS: Record<Language, Translations> = {
     safeWordPrompt: 'Établissez un mot de sécurité avec vos proches.',
     backToHome: 'Retour à l\'Accueil',
     aiDisclaimer: 'Cette expérience utilise le clonage vocal IA à des fins éducatives uniquement.',
+    processingVoice: 'Traitement du profil vocal...',
+    micPermissionTitle: 'Accès au Microphone Requis',
+    micPermissionDenied: 'Voicinne nécessite l\'accès au microphone. Activez-le dans les Paramètres.',
   },
   ITA: {
     appTitle: 'Voicinne',
@@ -205,6 +223,9 @@ const TRANSLATIONS: Record<Language, Translations> = {
     safeWordPrompt: 'Stabilisci una parola di sicurezza con i tuoi cari.',
     backToHome: 'Torna alla Home',
     aiDisclaimer: 'Questo esperimento usa la clonazione vocale IA solo a scopo educativo.',
+    processingVoice: 'Elaborazione profilo vocale...',
+    micPermissionTitle: 'Accesso al Microfono Richiesto',
+    micPermissionDenied: 'Voicinne necessita l\'accesso al microfono. Abilitalo nelle Impostazioni.',
   },
 };
 

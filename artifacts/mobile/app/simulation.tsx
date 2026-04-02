@@ -125,7 +125,7 @@ export default function SimulationScreen() {
               testID="go-home-button"
             >
               <Ionicons name="home" size={22} color="#ffffff" style={{ marginRight: 10 }} />
-              <Text style={styles.homeButtonText}>Back to Home</Text>
+              <Text style={styles.homeButtonText}>{t.backToHome}</Text>
             </TouchableOpacity>
           </ScrollView>
         </Animated.View>
@@ -191,7 +191,7 @@ export default function SimulationScreen() {
         <View style={[styles.infoBox, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <Ionicons name="information-circle-outline" size={20} color={colors.mutedForeground} style={{ marginRight: 8, marginTop: 2 }} />
           <Text style={[styles.infoText, { color: colors.mutedForeground }]}>
-            The AI agent is currently mimicking your voice to speak with a loved one.
+            {t.simulationInfo}
           </Text>
         </View>
 

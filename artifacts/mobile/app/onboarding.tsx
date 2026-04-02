@@ -159,7 +159,7 @@ export default function OnboardingScreen() {
         {hasRecorded && (
           <View style={[styles.recordedBadge, { backgroundColor: colors.primary + '22', borderColor: colors.primary + '55' }]}>
             <Ionicons name="checkmark-circle" size={18} color={colors.primary} style={{ marginRight: 6 }} />
-            <Text style={[styles.recordedText, { color: colors.primary }]}>Recorded</Text>
+            <Text style={[styles.recordedText, { color: colors.primary }]}>{t.recorded}</Text>
           </View>
         )}
       </View>
@@ -173,7 +173,7 @@ export default function OnboardingScreen() {
             testID="next-button"
           >
             <Text style={[styles.nextButtonText, { color: colors.primaryForeground }]}>
-              {currentIndex < TOTAL_QUESTIONS - 1 ? t.next : 'Begin Experiment'}
+              {currentIndex < TOTAL_QUESTIONS - 1 ? t.next : t.beginExperiment}
             </Text>
             <Ionicons name="arrow-forward" size={22} color={colors.primaryForeground} style={{ marginLeft: 8 }} />
           </TouchableOpacity>

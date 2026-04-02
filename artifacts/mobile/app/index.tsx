@@ -81,7 +81,7 @@ export default function HomeScreen() {
         <View style={[styles.warningBox, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <Ionicons name="warning-outline" size={20} color={colors.mutedForeground} style={{ marginRight: 8, marginTop: 2 }} />
           <Text style={[styles.warningText, { color: colors.mutedForeground }]}>
-            This experiment uses AI voice cloning for educational purposes only.
+            {t.aiDisclaimer}
           </Text>
         </View>
       </View>

@@ -1,0 +1,18 @@
+expert React Native developer and UX Designer. We are building a mobile application called "Voicinne", an educational deep fake awareness app. We will build this iteratively. This is Iteration 1.
+**THE PROJECT VISION:**
+"Voicinne" allows a user to clone their own voice using ElevenLabs, state some personal facts, and generate an AI agent (using Gemini) that mimics them to fool their relative (e.g. grandmother). After 3 minutes, the Agent reveals it is part of a deep fake psychological experiment and establishes a safety word. 
+**TECH STACK:**
+- React Native with Expo (Expo Router for navigation).
+- Vanilla React Native Styles (No Tailwind unless required).
+- Context API for State/Language.
+**YOUR GOAL FOR ITERATION 1:**
+Do not implement API logic yet. Focus only on the scaffold and the "Supersimple" UI.
+1. **Scaffold the App:** Initialize an Expo project using Expo Router if it is not already initialized. 
+2. **Language Management:** Create a `LanguageContext.tsx` that supports 6 languages (ENG, POL, SPA, GER, FRA, ITA). Hardcode translation dictionaries for the following text: App Title, Start Button, and 6 interview questions ("How does she call you?", "What does she mean to you?", "How do you call her?", "What will she ask?", "What will you answer?", "What can you ask her?").
+3. **Screens:** 
+   - Create `app/index.tsx`: A home screen with a massive "Start Experiment" button and a Language Selector. The design MUST be "supersimple", high-contrast, dark-mode, and accessible for older adults.
+   - Create `app/onboarding.tsx`: An interview flow screen that shows one question at a time with a massive "Hold to Record" mockup button. Iterate through the 6 questions. Next Button appears after "recording".
+   - Create `app/simulation.tsx`: A screen with a 3-minute countdown timer and a prominent "Reveal Experiment" button. When revealed, show a mockup view that says "Deep fake revealed - psychological warnings go here."
+**RULES:**
+- Use best practices for Replit Mobile App development.
+- Once you finish this UI/UX foundation, write a markdown file called `CURRENT_STATE.md` summarizing what you built, then STOP and wait for my next instruction.

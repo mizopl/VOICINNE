@@ -1,4 +1,4 @@
-# Voicinne — Current State (Iteration 2)
+# Voicinne — Current State (Iteration 3)
 
 ## What Was Built
 
@@ -7,6 +7,9 @@ Established the complete UI scaffold for **Voicinne**, an educational deep fake 
 
 ### Iteration 2 — Audio Recording + API Stubs
 Added real microphone recording via `expo-av`, a typed API client stub layer, and a processing pipeline screen on onboarding completion.
+
+### Iteration 3 — Secure Backend Architecture
+Established a real data pipeline: Mobile → Express Backend (`artifacts/api-server`) → Mock Response → Mobile. Three new `/api` endpoints handle transcription, persona generation, and voice cloning. The mobile `apiClient.ts` now makes real HTTP requests instead of local stubs.
 
 ---
 
@@ -19,6 +22,8 @@ Added real microphone recording via `expo-av`, a typed API client stub layer, an
 - **Navigation**: Stack-based (no tabs) — `index → onboarding → simulation`
 - **Theme**: Dark mode (`userInterfaceStyle: "dark"`), high-contrast cyan/charcoal palette
 - **Audio**: `expo-av` — real microphone capture with iOS/Android permission handling
+- **Backend**: Express.js (`artifacts/api-server`) — Replit artifact at path `/api`, port 8080
+- **Data flow**: Mobile app → `https://{REPLIT_DEV_DOMAIN}/api/*` → Express routes → mock response
 
 ---
 
@@ -59,16 +64,39 @@ No changes in Iteration 2.
 
 ---
 
-### `utils/apiClient.ts` — API Client Stubs (NEW Iteration 2)
-Three async stub functions simulating the planned backend API calls. Each introduces a ~1.2s mock delay.
+### `utils/apiClient.ts` — API Client (UPDATED Iteration 3)
+Three functions now make real `fetch` calls to the Express backend instead of using mock delays. No API keys are present — all external service calls are server-side only.
 
-| Function | Signature | Returns |
+| Function | HTTP Call | Returns |
 |---|---|---|
-| `transcribeAudio` | `(localUris: string[]) => Promise<string>` | Mock transcription text |
-| `generatePersona` | `(transcription: string) => Promise<Record<string, unknown>>` | Mock persona JSON |
-| `cloneVoice` | `(localUris: string[]) => Promise<string>` | Fake `voice_id` string |
+| `transcribeAudio(localUris)` | `POST /api/transcribe` (multipart/form-data) | `transcription: string` |
+| `generatePersona(transcription)` | `POST /api/generate-persona` (JSON) | persona object |
+| `cloneVoice(localUris)` | `POST /api/clone-voice` (multipart/form-data) | `voice_id: string` |
 
-**Architecture Note** (documented in file): In production, API keys (ElevenLabs, Gemini) live exclusively server-side. This client calls our own backend endpoints only — never third-party APIs directly.
+**Base URL**: `https://${process.env.EXPO_PUBLIC_DOMAIN}` — resolved from the `EXPO_PUBLIC_DOMAIN` env var injected by the mobile dev script.
+
+**File uploads**: Audio files are sent as `FormData` entries using the React Native standard pattern `{ uri, type, name }` — compatible with Expo Go without additional packages.
+
+---
+
+### `artifacts/api-server/src/routes/voicinne/` — New Route Files (Iteration 3)
+
+Three new Express route files added to the API server, each imported into `src/routes/index.ts`:
+
+**`transcribe.ts`** — `POST /api/transcribe`
+- Accepts `multipart/form-data` with `audio` file fields (via `multer` memory storage)
+- Logs file count and field names
+- Returns: `{ transcription: string }` (mock)
+
+**`generate-persona.ts`** — `POST /api/generate-persona`
+- Accepts JSON body `{ transcription: string }`
+- Logs transcription length
+- Returns: `{ mock: true, persona: { tone, relationship, vocabulary, emotionalTriggers, systemInstruction } }`
+
+**`clone-voice.ts`** — `POST /api/clone-voice`
+- Accepts `multipart/form-data` with `audio` file fields
+- Logs file count
+- Returns: `{ voice_id: "mock_123" }`
 
 ---
 
@@ -89,30 +117,67 @@ Unchanged from Iteration 1.
 | Package | Version | Added |
 |---|---|---|
 | `expo-av` | (resolved by Expo SDK 54) | Iteration 2 |
+| `multer` | ^2.x | Iteration 3 (api-server) |
+| `@types/multer` | ^2.x | Iteration 3 (api-server) |
 
 ---
 
 ## TypeScript
-✅ 0 errors across all files (`pnpm exec tsc --noEmit`)
+✅ 0 errors across all files (both `@workspace/api-server` and `@workspace/mobile`)
+
+---
+
+## Smoke Testing the Backend (Iteration 3)
+
+You can verify the backend is receiving requests by running these curl commands from any terminal. Replace `{DOMAIN}` with your Replit dev domain (visible in the preview URL or in the API server workflow logs as `REPLIT_DEV_DOMAIN`).
+
+**1. Health check (sanity test):**
+```bash
+curl https://{DOMAIN}/api/healthz
+# Expected: {"status":"ok"}
+```
+
+**2. Generate Persona (JSON body):**
+```bash
+curl -X POST https://{DOMAIN}/api/generate-persona \
+  -H "Content-Type: application/json" \
+  -d '{"transcription":"She calls me her little star."}'
+# Expected: {"mock":true,"persona":{"tone":"warm",...}}
+```
+
+**3. Clone Voice (multipart, no actual file needed for smoke test):**
+```bash
+curl -X POST https://{DOMAIN}/api/clone-voice -F "dummy=test"
+# Expected: {"voice_id":"mock_123"}
+```
+
+**4. Transcribe (multipart, no actual file needed for smoke test):**
+```bash
+curl -X POST https://{DOMAIN}/api/transcribe -F "dummy=test"
+# Expected: {"transcription":"[MOCK] The speaker described..."}
+```
+
+**Checking server logs:** In the Replit workspace, look at the "API Server" workflow console. Each request logs: `[voicinne] POST /api/<route> received` with file count / transcription length.
+
+**From the mobile app:** Run through the full onboarding flow (6 questions → "Begin Experiment"). The processing screen will appear while the three requests fire sequentially. On success, the simulation screen loads. Check the API Server workflow console to see the three log lines arrive in sequence.
 
 ---
 
 ## What Is NOT Implemented (Deferred to Future Iterations)
 
-- ElevenLabs voice cloning (real API call)
-- Gemini AI agent setup and call flow
-- Replit Serverless Backend (Express/Hono) — stub functions simulate its response
+- ElevenLabs voice cloning (real API call — server route returns mock_123)
+- Gemini AI agent (real call — server route returns mock persona)
+- Speech-to-text transcription (real call — server route returns mock transcription)
 - Safety word establishment logic
 - User authentication / profiles
 - Persistence of recorded answers or persona data
 
 ---
 
-## Next Steps (Iteration 3+)
+## Next Steps (Iteration 4+)
 
-1. **Replit Backend** — Build the Express/Hono API server with ElevenLabs + Gemini server-side integration
-2. **Real `transcribeAudio`** — POST audio files to backend → Whisper / Google STT
-3. **Real `generatePersona`** — POST transcription to backend → Gemini agent returns persona JSON
-4. **Real `cloneVoice`** — POST audio URIs to backend → ElevenLabs voice clone returns `voice_id`
-5. **Simulation Screen v2** — Play AI-generated audio using the cloned `voice_id`
-6. **Safety Word Flow** — Post-reveal, guide both parties to establish and store a safety word
+1. **Real `transcribeAudio`** — Wire Whisper / Google STT into `/api/transcribe` server-side
+2. **Real `generatePersona`** — Wire Gemini AI agent into `/api/generate-persona` server-side
+3. **Real `cloneVoice`** — Wire ElevenLabs Voice Cloning API into `/api/clone-voice` server-side
+4. **Simulation Screen v2** — Play AI-generated audio using the cloned `voice_id`
+5. **Safety Word Flow** — Post-reveal, guide both parties to establish and store a safety word

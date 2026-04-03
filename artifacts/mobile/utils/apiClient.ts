@@ -1,55 +1,92 @@
 /**
- * API Client — Stub Functions (Iteration 2)
+ * API Client — Iteration 3: Real Backend Calls
  *
- * These are mock implementations that simulate the three core API calls
- * planned for the secure Replit Serverless Backend in a future iteration.
- * All functions introduce a realistic async delay to simulate network latency.
+ * All three functions now make actual HTTP requests to the Express server
+ * running at artifacts/api-server. API keys (ElevenLabs, Gemini, etc.) are
+ * NEVER placed in this file — they live exclusively on the server side.
  *
- * ARCHITECTURE NOTE:
- * In production, all API keys (ElevenLabs, Gemini, etc.) will live exclusively
- * on the server side. This client file will only ever call our own backend
- * endpoints — never third-party APIs directly — to prevent key exposure.
+ * Base URL: https://{EXPO_PUBLIC_DOMAIN}
+ * The EXPO_PUBLIC_DOMAIN env var is injected by the mobile dev script as
+ * $REPLIT_DEV_DOMAIN (the Replit proxy domain). The API server artifact is
+ * routed at the /api path prefix, so endpoints are /api/transcribe, etc.
+ *
+ * Note: Server endpoints currently return MOCK responses. Real ElevenLabs
+ * and Gemini integration will be wired in on the server side in Iteration 4.
  */
 
-const MOCK_DELAY_MS = 1200;
-
-const delay = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
+const API_BASE = `https://${process.env.EXPO_PUBLIC_DOMAIN}`;
 
 /**
- * Stub: Transcribes the recorded audio files into a combined text string.
- * Production: Will POST local file URIs to our backend, which calls a
- * speech-to-text service (e.g. Whisper / Google STT) server-side.
+ * POST /api/transcribe
+ * Sends recorded audio files as multipart/form-data.
+ * Returns a transcription string from the server.
  */
 export async function transcribeAudio(localUris: string[]): Promise<string> {
-  await delay(MOCK_DELAY_MS);
-  return `[STUB] Transcribed ${localUris.length} audio file(s). Lorem ipsum dolor sit amet, the user answered warmly with personal details about their relationship.`;
+  const formData = new FormData();
+  localUris.forEach((uri, index) => {
+    formData.append('audio', {
+      uri,
+      type: 'audio/m4a',
+      name: `audio_${index}.m4a`,
+    } as unknown as Blob);
+  });
+
+  const response = await fetch(`${API_BASE}/api/transcribe`, {
+    method: 'POST',
+    body: formData,
+  });
+
+  if (!response.ok) {
+    throw new Error(`transcribeAudio failed: ${response.status} ${response.statusText}`);
+  }
+
+  const json = await response.json() as { transcription: string };
+  return json.transcription;
 }
 
 /**
- * Stub: Generates a psychological persona profile from the transcription.
- * Production: Will POST transcription to our backend, which calls a
- * Gemini AI agent server-side and returns a structured persona JSON.
+ * POST /api/generate-persona
+ * Sends the transcription as JSON.
+ * Returns a persona profile object from the server.
  */
 export async function generatePersona(transcription: string): Promise<Record<string, unknown>> {
-  await delay(MOCK_DELAY_MS);
-  return {
-    stub: true,
-    inputLength: transcription.length,
-    persona: {
-      tone: 'warm',
-      relationship: 'close_family',
-      vocabulary: 'casual',
-      emotionalTriggers: ['trust', 'familiarity', 'urgency'],
-    },
-  };
+  const response = await fetch(`${API_BASE}/api/generate-persona`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ transcription }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`generatePersona failed: ${response.status} ${response.statusText}`);
+  }
+
+  return response.json() as Promise<Record<string, unknown>>;
 }
 
 /**
- * Stub: Submits audio samples to clone the user's voice.
- * Production: Will POST local file URIs to our backend, which calls
- * ElevenLabs Voice Cloning API server-side and returns a voice_id.
+ * POST /api/clone-voice
+ * Sends recorded audio files as multipart/form-data.
+ * Returns a voice_id string from the server.
  */
 export async function cloneVoice(localUris: string[]): Promise<string> {
-  await delay(MOCK_DELAY_MS);
-  return `stub_voice_id_${Date.now()}_samples_${localUris.length}`;
+  const formData = new FormData();
+  localUris.forEach((uri, index) => {
+    formData.append('audio', {
+      uri,
+      type: 'audio/m4a',
+      name: `audio_${index}.m4a`,
+    } as unknown as Blob);
+  });
+
+  const response = await fetch(`${API_BASE}/api/clone-voice`, {
+    method: 'POST',
+    body: formData,
+  });
+
+  if (!response.ok) {
+    throw new Error(`cloneVoice failed: ${response.status} ${response.statusText}`);
+  }
+
+  const json = await response.json() as { voice_id: string };
+  return json.voice_id;
 }

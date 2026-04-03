@@ -14,7 +14,7 @@
  * and Gemini integration will be wired in on the server side in Iteration 4.
  */
 
-const API_BASE = `https://${process.env.EXPO_PUBLIC_DOMAIN}`;
+const API_BASE = `https://${process.env.EXPO_PUBLIC_DOMAIN}/api-server`;
 
 /**
  * POST /api/transcribe

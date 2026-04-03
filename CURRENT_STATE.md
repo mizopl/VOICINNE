@@ -137,25 +137,27 @@ curl https://{DOMAIN}/api/healthz
 # Expected: {"status":"ok"}
 ```
 
-**2. Generate Persona (JSON body):**
+**2. Generate Persona — via `/api-server` prefix (the path the mobile app uses):**
 ```bash
-curl -X POST https://{DOMAIN}/api/generate-persona \
+curl -X POST https://{DOMAIN}/api-server/api/generate-persona \
   -H "Content-Type: application/json" \
   -d '{"transcription":"She calls me her little star."}'
 # Expected: {"mock":true,"persona":{"tone":"warm",...}}
 ```
 
-**3. Clone Voice (multipart, no actual file needed for smoke test):**
+**3. Clone Voice — via `/api-server` prefix:**
 ```bash
-curl -X POST https://{DOMAIN}/api/clone-voice -F "dummy=test"
+curl -X POST https://{DOMAIN}/api-server/api/clone-voice -F "dummy=test"
 # Expected: {"voice_id":"mock_123"}
 ```
 
-**4. Transcribe (multipart, no actual file needed for smoke test):**
+**4. Transcribe — via `/api-server` prefix:**
 ```bash
-curl -X POST https://{DOMAIN}/api/transcribe -F "dummy=test"
+curl -X POST https://{DOMAIN}/api-server/api/transcribe -F "dummy=test"
 # Expected: {"transcription":"[MOCK] The speaker described..."}
 ```
+
+> **Note:** The API server handles both `/api/*` (legacy/health-check) and `/api-server/api/*` (used by the mobile client). The Replit proxy routes both `/api` and `/api-server` path prefixes to port 8080.
 
 **Checking server logs:** In the Replit workspace, look at the "API Server" workflow console. Each request logs: `[voicinne] POST /api/<route> received` with file count / transcription length.
 

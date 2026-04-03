@@ -1,4 +1,4 @@
-# Voicinne — Current State (Iteration 3)
+# Voicinne — Current State (Iteration 4)
 
 ## What Was Built
 
@@ -11,6 +11,14 @@ Added real microphone recording via `expo-av`, a typed API client stub layer, an
 ### Iteration 3 — Secure Backend Architecture
 Established a real data pipeline: Mobile → Express Backend (`artifacts/api-server`) → Mock Response → Mobile. Three new `/api` endpoints handle transcription, persona generation, and voice cloning. The mobile `apiClient.ts` now makes real HTTP requests instead of local stubs.
 
+### Iteration 4 — Live AI Integrations
+Replaced all mock responses with real third-party API calls server-side:
+- **`/api/transcribe`** → ElevenLabs `scribe_v1` speech-to-text API — receives audio buffer via multer, POSTs to `https://api.elevenlabs.io/v1/speech-to-text`, returns real transcription text.
+- **`/api/generate-persona`** → Gemini `gemini-2.5-pro` — sends transcription with the persona/debriefing prompt, receives JSON with `reveal_message`, tone, relationship, and Voice Agent config.
+- **`/api/clone-voice`** → ElevenLabs `v1/voices/add` — uploads all 6 recorded audio files, returns real `voice_id` for the cloned voice named `voicinne_experiment_voice`.
+- Added `axios`, `form-data` for multipart HTTP uploads; `@google/genai` for Gemini.
+- All routes have proper error handling: 400 for missing inputs, 500 for unconfigured keys, 502 (with `details`) for upstream API failures.
+
 ---
 
 ## Architecture
@@ -22,8 +30,10 @@ Established a real data pipeline: Mobile → Express Backend (`artifacts/api-ser
 - **Navigation**: Stack-based (no tabs) — `index → onboarding → simulation`
 - **Theme**: Dark mode (`userInterfaceStyle: "dark"`), high-contrast cyan/charcoal palette
 - **Audio**: `expo-av` — real microphone capture with iOS/Android permission handling
-- **Backend**: Express.js (`artifacts/api-server`) — Replit artifact at path `/api`, port 8080
-- **Data flow**: Mobile app → `https://{REPLIT_DEV_DOMAIN}/api/*` → Express routes → mock response
+- **Backend**: Express.js (`artifacts/api-server`) — Replit artifact at paths `/api` + `/api-server`, port 8080
+- **AI / STT**: ElevenLabs `scribe_v1` (speech-to-text), ElevenLabs `v1/voices/add` (voice cloning)
+- **LLM**: Google Gemini `gemini-2.5-pro` via `@google/genai`
+- **Data flow**: Mobile app → `https://{REPLIT_DEV_DOMAIN}/api-server/api/*` → Express routes → real AI APIs → response
 
 ---
 
@@ -118,7 +128,11 @@ Unchanged from Iteration 1.
 |---|---|---|
 | `expo-av` | (resolved by Expo SDK 54) | Iteration 2 |
 | `multer` | ^2.x | Iteration 3 (api-server) |
-| `@types/multer` | ^2.x | Iteration 3 (api-server) |
+| `@types/multer` | ^2.x | Iteration 3 (api-server, devDep) |
+| `axios` | ^1.x | Iteration 4 (api-server) |
+| `form-data` | ^4.x | Iteration 4 (api-server) |
+| `@types/form-data` | ^2.x | Iteration 4 (api-server, devDep) |
+| `@google/genai` | ^1.x | Iteration 4 (api-server) |
 
 ---
 
@@ -167,19 +181,18 @@ curl -X POST https://{DOMAIN}/api-server/api/transcribe -F "dummy=test"
 
 ## What Is NOT Implemented (Deferred to Future Iterations)
 
-- ElevenLabs voice cloning (real API call — server route returns mock_123)
-- Gemini AI agent (real call — server route returns mock persona)
-- Speech-to-text transcription (real call — server route returns mock transcription)
-- Safety word establishment logic
+- Simulation Screen v2: using the real `voice_id` to synthesise and play the "deepfake call" audio via ElevenLabs TTS
+- Safety word establishment flow (post-reveal, guided passcode creation)
+- Multer file-size / file-count limits on upload routes (pre-production hardening)
+- `expo/fetch` + `File` typed upload abstraction (currently uses RN FormData `{ uri, type, name }`)
 - User authentication / profiles
 - Persistence of recorded answers or persona data
 
 ---
 
-## Next Steps (Iteration 4+)
+## Next Steps (Iteration 5+)
 
-1. **Real `transcribeAudio`** — Wire Whisper / Google STT into `/api/transcribe` server-side
-2. **Real `generatePersona`** — Wire Gemini AI agent into `/api/generate-persona` server-side
-3. **Real `cloneVoice`** — Wire ElevenLabs Voice Cloning API into `/api/clone-voice` server-side
-4. **Simulation Screen v2** — Play AI-generated audio using the cloned `voice_id`
-5. **Safety Word Flow** — Post-reveal, guide both parties to establish and store a safety word
+1. **Simulation Screen v2** — Use the `voice_id` returned by `/api/clone-voice` to make an ElevenLabs TTS call, play the resulting audio as the simulated "deepfake phone call"
+2. **Safety Word Flow** — Post-reveal, guide both parties to establish and store a family passcode
+3. **Upload hardening** — Add multer limits and payload validation before real production traffic
+4. **Typed upload abstraction** — Replace RN FormData object with `expo/fetch` + `File` for stream-safe uploads

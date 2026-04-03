@@ -14,7 +14,7 @@ Established a real data pipeline: Mobile → Express Backend (`artifacts/api-ser
 ### Iteration 4 — Live AI Integrations
 Replaced all mock responses with real third-party API calls server-side:
 - **`/api/transcribe`** → ElevenLabs `scribe_v1` speech-to-text API — receives audio buffer via multer, POSTs to `https://api.elevenlabs.io/v1/speech-to-text`, returns real transcription text.
-- **`/api/generate-persona`** → Gemini `gemini-2.5-pro` — sends transcription with the persona/debriefing prompt, receives JSON with `reveal_message`, tone, relationship, and Voice Agent config.
+- **`/api/generate-persona`** → Gemini `gemini-3.1-pro-preview` — sends transcription with the persona/debriefing prompt, receives JSON with `reveal_message`, tone, relationship, and Voice Agent config.
 - **`/api/clone-voice`** → ElevenLabs `v1/voices/add` — uploads all 6 recorded audio files, returns real `voice_id` for the cloned voice named `voicinne_experiment_voice`.
 - Added `axios`, `form-data` for multipart HTTP uploads; `@google/genai` for Gemini.
 - All routes have proper error handling: 400 for missing inputs, 500 for unconfigured keys, 502 (with `details`) for upstream API failures.
@@ -32,7 +32,7 @@ Replaced all mock responses with real third-party API calls server-side:
 - **Audio**: `expo-av` — real microphone capture with iOS/Android permission handling
 - **Backend**: Express.js (`artifacts/api-server`) — Replit artifact at paths `/api` + `/api-server`, port 8080
 - **AI / STT**: ElevenLabs `scribe_v1` (speech-to-text), ElevenLabs `v1/voices/add` (voice cloning)
-- **LLM**: Google Gemini `gemini-2.5-pro` via `@google/genai`
+- **LLM**: Google Gemini `gemini-3.1-pro-preview` via `@google/genai`
 - **Data flow**: Mobile app → `https://{REPLIT_DEV_DOMAIN}/api-server/api/*` → Express routes → real AI APIs → response
 
 ---

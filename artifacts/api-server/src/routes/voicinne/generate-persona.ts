@@ -38,7 +38,7 @@ router.post("/generate-persona", async (req, res) => {
     const ai = new GoogleGenAI({ apiKey });
 
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-pro",
+      model: "gemini-3.1-pro-preview",
       contents: `${PERSONA_PROMPT}\n\nUser relationship facts:\n${transcription}`,
       config: {
         responseMimeType: "application/json",

@@ -1,0 +1,23 @@
+We are completely redesigning the Onboarding UX. We must delete the 5-question interview format. It produces robotic voice clones. Instead, we want the user to perform a single 60-second 'roleplay' simulation where they pretend to have a conversation with the relative they are targeting.
+
+Please execute the following massive refactoring:
+
+**1. FRONTEND REFACTOR (`app/onboarding.tsx`)**
+- Delete the array of 5 questions and the step-by-step logic.
+- Replace it with a single prominent instruction screen: 
+  "Przygotowanie do symulacji. Odgrywamy scenkę! Masz 60 sekund. Udawaj, że prowadzisz rozmowę ze swoim bliskim. Zacznij jako ty, a potem odgrywaj również głos rozmówcy naprzemiennie. Np: 'Cześć babciu!' -> 'Cześć wnusiu, co tam?'"
+- Keep the `expo-av` recording logic, but change it to record ONE single continuous audio blob (max 60 seconds).
+- Update the payload sent to the backend `/api/transcribe` to just contain this single file, rather than an array of files.
+- Ensure the user can stop the recording manually, or it auto-stops at 60s.
+
+**2. BACKEND TRANSCRIBE REFACTOR (`/api/transcribe`)**
+- Modify the `multer` handling and the ElevenLabs STT backend logic so it successfully accepts and processes a single audio file payload instead of 5.
+
+**3. BACKEND GEMINI PROMPT REFACTOR (`/api/generate-persona`)**
+- Gemini will now be receiving a transcription that looks like a 2-way conversation (a roleplay script). 
+- Update the system instruction for Gemini to explicitly state:
+  "You will be given a transcription. This transcription is a single person performing a 'roleplay' of a phone call. They are playing BOTH themselves (the App User) and their relative. Analyze this back-and-forth dialogue to extract:
+  1. The identities and relationships (e.g., Grandson and Grandmother).
+  2. The exact nicknames they use.
+  3. The natural conversational tone and context discussed in the roleplay."
+- Ensure Gemini uses these extracted facts to populate the standard Agent configurations we established earlier!

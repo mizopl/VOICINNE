@@ -19,7 +19,8 @@ router.post("/create-agent", async (req, res) => {
   const { voice_id, system_prompt, reveal_message, language_code } =
     req.body as Partial<CreateAgentBody>;
 
-  const resolvedLang = language_code?.trim() || "en";
+  const rawLang = language_code?.trim() ?? "";
+  const resolvedLang = /^[a-z]{2}$/.test(rawLang) ? rawLang : "en";
 
   logger.info(
     {

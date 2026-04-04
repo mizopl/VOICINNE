@@ -8,6 +8,7 @@ interface CreateAgentBody {
   voice_id: string;
   system_prompt: string;
   reveal_message?: string;
+  language_code?: string;
 }
 
 interface ElevenLabsCreateAgentResponse {
@@ -15,14 +16,17 @@ interface ElevenLabsCreateAgentResponse {
 }
 
 router.post("/create-agent", async (req, res) => {
-  const { voice_id, system_prompt, reveal_message } =
+  const { voice_id, system_prompt, reveal_message, language_code } =
     req.body as Partial<CreateAgentBody>;
+
+  const resolvedLang = language_code?.trim() || "en";
 
   logger.info(
     {
       voice_id,
       systemPromptLength: system_prompt?.length ?? 0,
       hasRevealMessage: Boolean(reveal_message),
+      languageCode: resolvedLang,
     },
     "[voicinne] POST /api/create-agent received"
   );
@@ -51,8 +55,9 @@ router.post("/create-agent", async (req, res) => {
             prompt: {
               prompt: system_prompt,
             },
-            first_message:
-              "Hello, it's me. I just needed to hear your voice. How are you doing?",
+          },
+          asr: {
+            language: resolvedLang,
           },
           tts: {
             voice_id,

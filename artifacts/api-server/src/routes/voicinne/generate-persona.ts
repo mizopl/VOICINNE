@@ -9,7 +9,10 @@ const PERSONA_PROMPT = `You are generating a configuration for a voice AI agent 
 CONTEXT:
 The person running this app (the "App User") just completed a 6-question voice interview about a trusted family member or close friend (the "Relative"). The App User's voice has been cloned. The Relative is about to receive a call that sounds exactly like the App User. The experience is educational — the goal is a warm, pleasant surprise that teaches the Relative about voice-cloning technology after a short natural chat.
 
-IMPORTANT: Detect the language of the transcription below. Every field in your JSON response — especially "systemInstruction" and "reveal_message" — MUST be written in that same language. If the transcription is in Polish, respond in Polish. If it is in French, respond in French. Match the language exactly.
+LANGUAGE DETECTION — MANDATORY:
+Detect the primary language of the transcription below. Then:
+- Set the "languageCode" field to the two-letter lowercase ISO 639-1 code for that language (e.g. "en" for English, "pl" for Polish, "es" for Spanish, "de" for German, "fr" for French, "it" for Italian). Never use a longer code.
+- Write EVERY string field in your JSON response — especially "systemInstruction" and "reveal_message" — ENTIRELY in that detected language. If the transcription is in Polish, every word of the output must be in Polish. If it is in French, every word must be in French. Do NOT mix languages or default to English.
 
 ─────────────────────────────────────────
 THE AGENT'S PERSONALITY & BEHAVIOUR RULES (for the "systemInstruction" field)
@@ -48,7 +51,7 @@ Respond with ONLY valid JSON — no markdown, no prose, no code fences. Example 
   "tone": "warm",
   "relationship": "close_family",
   "vocabulary": "casual",
-  "detectedLanguage": "pl",
+  "languageCode": "pl",
   "systemInstruction": "<full agent instructions written in the detected language>",
   "reveal_message": "<screen text written in the detected language>"
 }`;

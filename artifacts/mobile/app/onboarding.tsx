@@ -134,8 +134,13 @@ export default function OnboardingScreen() {
         (persona.revealMessage as string | undefined) ??
         '';
 
+      const language_code =
+        (persona.languageCode as string | undefined) ??
+        (persona.detectedLanguage as string | undefined) ??
+        'en';
+
       const voice_id = await cloneVoice(uris);
-      const { agentId, revealMessage } = await createAgent(voice_id, system_prompt, reveal_message);
+      const { agentId, revealMessage } = await createAgent(voice_id, system_prompt, reveal_message, language_code);
       router.push({ pathname: '/simulation', params: { agentId, revealMessage } });
     } catch {
       setIsProcessing(false);

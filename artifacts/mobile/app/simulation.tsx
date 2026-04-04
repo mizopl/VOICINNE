@@ -126,6 +126,8 @@ function SimulationContent({ agentId }: { agentId: string }) {
 
   const handleReveal = () => {
     if (revealed) return;
+    // endSession() returns void (not a Promise), so calling it synchronously
+    // before state update is the correct sequencing per @elevenlabs/react types.
     if (isConnected || isConnecting) {
       endSession();
     }

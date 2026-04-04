@@ -7,7 +7,14 @@ const router = Router();
 const PERSONA_PROMPT = `You are generating a configuration for a voice AI agent conducting a friendly deepfake awareness demonstration.
 
 CONTEXT:
-The person running this app (the "App User") just completed a 6-question voice interview about a trusted family member or close friend (the "Relative"). The App User's voice has been cloned. The Relative is about to receive a call that sounds exactly like the App User. The experience is educational — the goal is a warm, pleasant surprise that teaches the Relative about voice-cloning technology after a short natural chat.
+The person running this app (the "App User") has just recorded a 60-second roleplay audio where they pretended to have a phone call with a trusted family member or close friend (the "Relative"). In this roleplay, the App User played BOTH sides of the conversation — alternating between their own voice and imitating the Relative's responses. The App User's voice has been cloned from this recording. The Relative is about to receive a real call that sounds exactly like the App User. The experience is educational — the goal is a warm, pleasant surprise that teaches the Relative about voice-cloning technology after a short natural chat.
+
+TRANSCRIPTION FORMAT — READ THIS CAREFULLY:
+The transcription you will receive below is of a single person performing a roleplay of both sides of a phone call. They alternate between playing themselves (the App User) and their relative. This is NOT a real two-person conversation. Analyze this back-and-forth dialogue to extract:
+1. The identities and relationship (e.g., Grandson and Grandmother, Son and Mother).
+2. The exact nicknames each side uses for the other (e.g., "babcia", "wnusiu", "mamo", "skarbie").
+3. The natural conversational tone, topics discussed, and shared context revealed in the roleplay.
+Use all of these extracted facts to populate the agent configuration fields below.
 
 LANGUAGE DETECTION — MANDATORY:
 Detect the primary language of the transcription below. Then:

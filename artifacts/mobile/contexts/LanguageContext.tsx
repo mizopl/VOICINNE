@@ -7,18 +7,15 @@ export interface Translations {
   appSubtitle: string;
   startButton: string;
   selectLanguage: string;
-  question1: string;
-  question2: string;
-  question3: string;
-  question4: string;
-  question5: string;
-  question6: string;
+  roleplayTitle: string;
+  roleplayInstructions: string;
+  roleplayExample: string;
+  tapToRecord: string;
+  stopRecording: string;
   holdToRecord: string;
   recording: string;
   recorded: string;
-  next: string;
   beginExperiment: string;
-  questionLabel: string;
   simulationTitle: string;
   simulationSubtitle: string;
   simulationInfo: string;
@@ -40,18 +37,15 @@ const TRANSLATIONS: Record<Language, Translations> = {
     appSubtitle: 'A Deep Fake Awareness Experiment',
     startButton: 'Start Experiment',
     selectLanguage: 'Select Language',
-    question1: 'How does she call you?',
-    question2: 'What does she mean to you?',
-    question3: 'How do you call her?',
-    question4: 'What will she ask?',
-    question5: 'What will you answer?',
-    question6: 'What can you ask her?',
-    holdToRecord: 'Hold to Record',
+    roleplayTitle: 'Prepare for the Simulation',
+    roleplayInstructions: "Let's roleplay! You have 60 seconds. Pretend you're having a phone call with your loved one. Start as yourself, then switch and play their voice too — back and forth.",
+    roleplayExample: "E.g.: 'Hey grandma!' → 'Oh hi sweetheart, what's up?'",
+    tapToRecord: 'Tap to start recording',
+    stopRecording: 'Tap to stop',
+    holdToRecord: 'Tap to Record',
     recording: 'Recording...',
     recorded: 'Recorded',
-    next: 'Next',
     beginExperiment: 'Begin Experiment',
-    questionLabel: 'Question',
     simulationTitle: 'Experiment Running',
     simulationSubtitle: 'The AI is mimicking you.',
     simulationInfo: 'The AI agent is currently mimicking your voice to speak with a loved one.',
@@ -72,18 +66,15 @@ const TRANSLATIONS: Record<Language, Translations> = {
     appSubtitle: 'Eksperyment Świadomości Deep Fake',
     startButton: 'Rozpocznij Eksperyment',
     selectLanguage: 'Wybierz Język',
-    question1: 'Jak ona Cię nazywa?',
-    question2: 'Co ona dla Ciebie znaczy?',
-    question3: 'Jak Ty ją nazywasz?',
-    question4: 'O co ona zapyta?',
-    question5: 'Co jej odpowiesz?',
-    question6: 'O co możesz ją zapytać?',
+    roleplayTitle: 'Przygotowanie do symulacji',
+    roleplayInstructions: 'Odgrywamy scenkę! Masz 60 sekund. Udawaj, że prowadzisz rozmowę ze swoim bliskim. Zacznij jako ty, a potem odgrywaj również głos rozmówcy naprzemiennie.',
+    roleplayExample: "Np: 'Cześć babciu!' -> 'Cześć wnusiu, co tam?'",
+    tapToRecord: 'Naciśnij aby zacząć nagrywać',
+    stopRecording: 'Naciśnij aby zatrzymać',
     holdToRecord: 'Przytrzymaj aby nagrać',
     recording: 'Nagrywanie...',
     recorded: 'Nagrano',
-    next: 'Dalej',
     beginExperiment: 'Rozpocznij Eksperyment',
-    questionLabel: 'Pytanie',
     simulationTitle: 'Eksperyment Trwa',
     simulationSubtitle: 'AI naśladuje Ciebie.',
     simulationInfo: 'Agent AI naśladuje Twój głos, aby rozmawiać z bliską osobą.',
@@ -104,18 +95,15 @@ const TRANSLATIONS: Record<Language, Translations> = {
     appSubtitle: 'Un Experimento de Conciencia sobre Deep Fakes',
     startButton: 'Iniciar Experimento',
     selectLanguage: 'Seleccionar Idioma',
-    question1: '¿Cómo te llama ella?',
-    question2: '¿Qué significa para ti?',
-    question3: '¿Cómo la llamas tú?',
-    question4: '¿Qué preguntará ella?',
-    question5: '¿Qué le responderás?',
-    question6: '¿Qué puedes preguntarle?',
+    roleplayTitle: 'Preparación para la simulación',
+    roleplayInstructions: '¡Hagamos un juego de rol! Tienes 60 segundos. Simula que estás hablando por teléfono con tu ser querido. Empieza como tú mismo y luego alterna interpretando también la voz del otro.',
+    roleplayExample: "Ej: '¡Hola abuela!' → '¡Hola cariño, qué tal?'",
+    tapToRecord: 'Toca para empezar a grabar',
+    stopRecording: 'Toca para detener',
     holdToRecord: 'Mantén para grabar',
     recording: 'Grabando...',
     recorded: 'Grabado',
-    next: 'Siguiente',
     beginExperiment: 'Iniciar Experimento',
-    questionLabel: 'Pregunta',
     simulationTitle: 'Experimento en Curso',
     simulationSubtitle: 'La IA te está imitando.',
     simulationInfo: 'El agente de IA está imitando tu voz para hablar con un ser querido.',
@@ -136,18 +124,15 @@ const TRANSLATIONS: Record<Language, Translations> = {
     appSubtitle: 'Ein Deep-Fake-Bewusstseins-Experiment',
     startButton: 'Experiment Starten',
     selectLanguage: 'Sprache Wählen',
-    question1: 'Wie nennt sie dich?',
-    question2: 'Was bedeutet sie dir?',
-    question3: 'Wie nennst du sie?',
-    question4: 'Was wird sie fragen?',
-    question5: 'Was wirst du antworten?',
-    question6: 'Was kannst du sie fragen?',
+    roleplayTitle: 'Vorbereitung auf die Simulation',
+    roleplayInstructions: 'Lass uns ein Rollenspiel machen! Du hast 60 Sekunden. Stell dir vor, du telefonierst mit deinem Angehörigen. Fang als du selbst an und wechsle dann abwechselnd in die Rolle des anderen.',
+    roleplayExample: "Z.B.: 'Hallo Oma!' → 'Oh hallo Schatz, was gibt's?'",
+    tapToRecord: 'Tippen um die Aufnahme zu starten',
+    stopRecording: 'Tippen um zu stoppen',
     holdToRecord: 'Halten zum Aufnehmen',
     recording: 'Aufnahme...',
     recorded: 'Aufgenommen',
-    next: 'Weiter',
     beginExperiment: 'Experiment Beginnen',
-    questionLabel: 'Frage',
     simulationTitle: 'Experiment Läuft',
     simulationSubtitle: 'Die KI imitiert dich.',
     simulationInfo: 'Der KI-Agent imitiert deine Stimme, um mit einem Angehörigen zu sprechen.',
@@ -168,18 +153,15 @@ const TRANSLATIONS: Record<Language, Translations> = {
     appSubtitle: 'Une Expérience de Sensibilisation aux Deep Fakes',
     startButton: 'Démarrer l\'Expérience',
     selectLanguage: 'Choisir la Langue',
-    question1: 'Comment t\'appelle-t-elle ?',
-    question2: 'Qu\'est-ce qu\'elle représente pour toi ?',
-    question3: 'Comment l\'appelles-tu ?',
-    question4: 'Que demandera-t-elle ?',
-    question5: 'Que lui répondras-tu ?',
-    question6: 'Que peux-tu lui demander ?',
+    roleplayTitle: 'Préparation à la simulation',
+    roleplayInstructions: 'Faisons un jeu de rôle ! Tu as 60 secondes. Fais semblant d\'avoir une conversation téléphonique avec ton proche. Commence en jouant ton rôle, puis alterne en jouant aussi la voix de l\'autre.',
+    roleplayExample: "Ex : 'Salut mamie !' → 'Oh bonjour chéri(e), quoi de neuf ?'",
+    tapToRecord: 'Appuyer pour commencer l\'enregistrement',
+    stopRecording: 'Appuyer pour arrêter',
     holdToRecord: 'Maintenir pour enregistrer',
     recording: 'Enregistrement...',
     recorded: 'Enregistré',
-    next: 'Suivant',
     beginExperiment: 'Commencer l\'Expérience',
-    questionLabel: 'Question',
     simulationTitle: 'Expérience en Cours',
     simulationSubtitle: 'L\'IA vous imite.',
     simulationInfo: 'L\'agent IA imite votre voix pour parler avec un proche.',
@@ -200,18 +182,15 @@ const TRANSLATIONS: Record<Language, Translations> = {
     appSubtitle: 'Un Esperimento di Consapevolezza sui Deep Fake',
     startButton: 'Inizia Esperimento',
     selectLanguage: 'Seleziona Lingua',
-    question1: 'Come ti chiama lei?',
-    question2: 'Cosa significa per te?',
-    question3: 'Come la chiami tu?',
-    question4: 'Cosa chiederà?',
-    question5: 'Cosa risponderai?',
-    question6: 'Cosa puoi chiederle?',
+    roleplayTitle: 'Preparazione alla simulazione',
+    roleplayInstructions: 'Facciamo un gioco di ruolo! Hai 60 secondi. Fai finta di avere una conversazione telefonica con il tuo caro. Inizia come te stesso, poi alterna interpretando anche la voce dell\'altro.',
+    roleplayExample: "Es: 'Ciao nonna!' → 'Oh ciao tesoro, cosa c'è?'",
+    tapToRecord: 'Tocca per iniziare a registrare',
+    stopRecording: 'Tocca per fermare',
     holdToRecord: 'Tieni premuto per registrare',
     recording: 'Registrazione...',
     recorded: 'Registrato',
-    next: 'Avanti',
     beginExperiment: 'Inizia Esperimento',
-    questionLabel: 'Domanda',
     simulationTitle: 'Esperimento in Corso',
     simulationSubtitle: 'L\'IA ti sta imitando.',
     simulationInfo: 'L\'agente IA sta imitando la tua voce per parlare con un caro.',
@@ -237,15 +216,6 @@ export const LANGUAGE_LABELS: Record<Language, string> = {
   FRA: 'Français',
   ITA: 'Italiano',
 };
-
-export const QUESTIONS_KEYS: (keyof Translations)[] = [
-  'question1',
-  'question2',
-  'question3',
-  'question4',
-  'question5',
-  'question6',
-];
 
 interface LanguageContextValue {
   language: Language;

@@ -7,6 +7,31 @@ import { logger } from "../../lib/logger";
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage() });
 
+async function transcribeFile(
+  file: Express.Multer.File,
+  apiKey: string
+): Promise<string> {
+  const form = new FormData();
+  form.append("file", file.buffer, {
+    filename: file.originalname || "audio.m4a",
+    contentType: file.mimetype || "audio/m4a",
+  });
+  form.append("model_id", "scribe_v1");
+
+  const response = await axios.post<{ text: string }>(
+    "https://api.elevenlabs.io/v1/speech-to-text",
+    form,
+    {
+      headers: {
+        "xi-api-key": apiKey,
+        ...form.getHeaders(),
+      },
+    }
+  );
+
+  return response.data.text;
+}
+
 router.post("/transcribe", upload.array("audio"), async (req, res) => {
   const files = req.files as Express.Multer.File[] | undefined;
   logger.info(
@@ -26,29 +51,14 @@ router.post("/transcribe", upload.array("audio"), async (req, res) => {
   }
 
   try {
-    const file = files[0];
-    const form = new FormData();
-    form.append("file", file.buffer, {
-      filename: file.originalname || "audio.m4a",
-      contentType: file.mimetype || "audio/m4a",
-    });
-    form.append("model_id", "scribe_v1");
-
-    const response = await axios.post<{ text: string }>(
-      "https://api.elevenlabs.io/v1/speech-to-text",
-      form,
-      {
-        headers: {
-          "xi-api-key": apiKey,
-          ...form.getHeaders(),
-        },
-      }
+    const transcriptions = await Promise.all(
+      files.map((file) => transcribeFile(file, apiKey))
     );
 
-    const transcription = response.data.text;
+    const transcription = transcriptions.join(" ");
     logger.info(
-      { transcriptionLength: transcription.length },
-      "[voicinne] transcription received from ElevenLabs"
+      { fileCount: files.length, transcriptionLength: transcription.length },
+      "[voicinne] all files transcribed via ElevenLabs"
     );
     res.json({ transcription });
   } catch (err) {

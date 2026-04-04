@@ -1,0 +1,21 @@
+YOUR GOAL FOR THIS ITERATION:
+We need to connect the frontend to the live conversational AI, and fix a logical flaw in our Gemini Prompt. 
+
+**1. FIX THE GEMINI PROMPT LOGIC (`/api/generate-persona`)**
+Currently, Gemini thinks the Agent is a debriefer talking to the App User. This is wrong! The App User just cloned their own voice and is handing the phone to their vulnerable relative (e.g., Grandmother). 
+Update the prompt sent to Gemini to enforce this perspective:
+- `systemInstruction`: The Agent must pretend to be the 'App User'. It must use the transcription facts to sound extremely authentic. It must gently steer the conversation into a classic scam scenario (e.g., asking for urgent financial help because they are in trouble).
+- `reveal_message`: This is the debriefing message played at the exact end of the simulation. It must be written AS the App User addressing the relative with empathy. (e.g., "Grandma, I'm so sorry, but this entire conversation wasn't me. It was an AI deep fake using 44 seconds of my voice... Let's set up a family password so you are safe.")
+
+**2. REVEAL MESSAGE PASS-THROUGH**
+Ensure that the newly generated `reveal_message` string is returned alongside the `agent_id` in the `/api/create-agent` response body, so the Frontend can access and display it later.
+
+**3. FRONTEND CONNECTION (`app/simulation.tsx`)**
+The backend works perfectly. Now let's connect the frontend audio!
+- Install `@elevenlabs/react` on the Expo frontend.
+- Import `useConversation` and use the `agent_id` passed down from the previous cloning sequence.
+- Build a "Connect Call / Answer" button in `simulation.tsx` that triggers `conversation.startSession()`.
+- Add a visual indicator in the UI (e.g., a glowing ring or soundwave) using the `useConversation` volume status.
+- strict timer: When the 3-minute countdown reaches zero, forcefully trigger `conversation.endSession()` and transition the UI to the final warning screen, displaying that custom empathetic `reveal_message`.
+
+Process these steps carefully and use Plan mode!

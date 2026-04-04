@@ -22,8 +22,12 @@ const API_BASE = `https://${process.env.EXPO_PUBLIC_DOMAIN}/api-server`;
  * Returns a transcription string from the server.
  */
 export async function transcribeAudio(localUris: string[]): Promise<string> {
+  const validUris = localUris.filter(Boolean);
+  if (validUris.length === 0) {
+    throw new Error('transcribeAudio: no valid audio URIs provided');
+  }
   const formData = new FormData();
-  localUris.forEach((uri, index) => {
+  validUris.forEach((uri, index) => {
     formData.append('audio', {
       uri,
       type: 'audio/m4a',
@@ -69,8 +73,12 @@ export async function generatePersona(transcription: string): Promise<Record<str
  * Returns a voice_id string from the server.
  */
 export async function cloneVoice(localUris: string[]): Promise<string> {
+  const validUris = localUris.filter(Boolean);
+  if (validUris.length === 0) {
+    throw new Error('cloneVoice: no valid audio URIs provided');
+  }
   const formData = new FormData();
-  localUris.forEach((uri, index) => {
+  validUris.forEach((uri, index) => {
     formData.append('audio', {
       uri,
       type: 'audio/m4a',

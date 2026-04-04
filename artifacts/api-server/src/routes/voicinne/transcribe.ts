@@ -32,15 +32,26 @@ async function transcribeFile(
   return response.data.text;
 }
 
-router.post("/transcribe", upload.array("audio"), async (req, res) => {
+router.post("/transcribe", upload.any(), async (req, res) => {
   const files = req.files as Express.Multer.File[] | undefined;
+
   logger.info(
-    { fileCount: files?.length ?? 0 },
+    {
+      fileCount: files?.length ?? 0,
+      contentType: req.headers["content-type"],
+      bodyKeys: Object.keys(req.body ?? {}),
+    },
     "[voicinne] POST /api/transcribe received"
   );
 
   if (!files || files.length === 0) {
-    res.status(400).json({ error: "No audio files provided" });
+    res.status(400).json({
+      error: "No audio files provided",
+      debug: {
+        contentType: req.headers["content-type"],
+        bodyKeys: Object.keys(req.body ?? {}),
+      },
+    });
     return;
   }
 

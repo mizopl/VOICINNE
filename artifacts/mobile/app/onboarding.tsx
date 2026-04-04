@@ -2,9 +2,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { Audio } from 'expo-av';
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   Animated,
   Platform,
   StyleSheet,
@@ -35,6 +36,16 @@ export default function OnboardingScreen() {
   const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const pulseLoop = useRef<Animated.CompositeAnimation | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (countdownRef.current) clearInterval(countdownRef.current);
+      if (recordingRef.current) {
+        recordingRef.current.stopAndUnloadAsync().catch(() => {});
+        recordingRef.current = null;
+      }
+    };
+  }, []);
 
   const topPad = Platform.OS === 'web' ? 67 : insets.top;
   const bottomPad = Platform.OS === 'web' ? 34 : insets.bottom;
@@ -86,6 +97,7 @@ export default function OnboardingScreen() {
 
     const { status } = await Audio.requestPermissionsAsync();
     if (status !== 'granted') {
+      Alert.alert(t.micPermissionTitle, t.micPermissionDenied);
       return;
     }
 
@@ -158,7 +170,9 @@ export default function OnboardingScreen() {
 
   const formatTime = (s: number) => {
     const secs = Math.max(0, s);
-    return `0:${secs < 10 ? '0' : ''}${secs}`;
+    const mins = Math.floor(secs / 60);
+    const rem = secs % 60;
+    return `${mins}:${rem < 10 ? '0' : ''}${rem}`;
   };
 
   if (isProcessing) {

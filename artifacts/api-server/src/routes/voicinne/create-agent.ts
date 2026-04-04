@@ -7,6 +7,7 @@ const router = Router();
 interface CreateAgentBody {
   voice_id: string;
   system_prompt: string;
+  first_message?: string;
   reveal_message?: string;
   language_code?: string;
 }
@@ -16,7 +17,7 @@ interface ElevenLabsCreateAgentResponse {
 }
 
 router.post("/create-agent", async (req, res) => {
-  const { voice_id, system_prompt, reveal_message, language_code } =
+  const { voice_id, system_prompt, first_message, reveal_message, language_code } =
     req.body as Partial<CreateAgentBody>;
 
   const rawLang = language_code?.trim() ?? "";
@@ -26,6 +27,7 @@ router.post("/create-agent", async (req, res) => {
     {
       voice_id,
       systemPromptLength: system_prompt?.length ?? 0,
+      hasFirstMessage: Boolean(first_message),
       hasRevealMessage: Boolean(reveal_message),
       languageCode: resolvedLang,
     },
@@ -52,16 +54,31 @@ router.post("/create-agent", async (req, res) => {
       {
         name: `voicinne_agent_${voice_id}`,
         conversation_config: {
+          turn: {
+            turn_timeout: 2.0,
+            mode: "turn",
+            turn_eagerness: "eager",
+            spelling_patience: "off",
+            speculative_turn: true,
+          },
+          tts: {
+            model_id: "eleven_v3_conversational",
+            voice_id,
+            expressive_mode: true,
+            optimize_streaming_latency: 4,
+            stability: 0.2,
+            speed: 1.11,
+            similarity_boost: 0.74,
+            text_normalisation_type: "elevenlabs",
+          },
           agent: {
             prompt: {
               prompt: system_prompt,
+              llm: "gemini-2.5-flash",
+              temperature: 1.0,
             },
-          },
-          asr: {
+            first_message: first_message || undefined,
             language: resolvedLang,
-          },
-          tts: {
-            voice_id,
           },
         },
         platform_settings: {

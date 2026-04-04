@@ -70,7 +70,8 @@ Respond with ONLY valid JSON — no markdown, no prose, no code fences. Example 
   "relationship": "close_family",
   "vocabulary": "casual",
   "languageCode": "pl",
-  "systemInstruction": "<full agent instructions written in the detected language>",
+  "first_message": "<a single warm, natural opening line spoken by the agent when the call connects — written in the detected language, 1–2 sentences max, sounds like the App User just picked up the phone and is happy to hear the Relative>",
+  "systemInstruction": "<full agent instructions written in the detected language, formatted with \\n between logical blocks, no ALL-CAPS headers>",
   "reveal_message": "<screen text written in the detected language>"
 }`;
 

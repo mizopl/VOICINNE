@@ -101,12 +101,13 @@ export async function createAgent(
   voice_id: string,
   system_prompt: string,
   reveal_message: string,
-  language_code: string
+  language_code: string,
+  first_message: string
 ): Promise<{ agentId: string; revealMessage: string }> {
   const response = await fetch(`${API_BASE}/api/create-agent`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ voice_id, system_prompt, reveal_message, language_code }),
+    body: JSON.stringify({ voice_id, system_prompt, reveal_message, language_code, first_message }),
   });
 
   if (!response.ok) {

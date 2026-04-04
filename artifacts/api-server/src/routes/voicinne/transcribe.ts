@@ -71,6 +71,10 @@ router.post("/transcribe", upload.any(), async (req, res) => {
       { fileCount: files.length, transcriptionLength: transcription.length },
       "[voicinne] all files transcribed via ElevenLabs"
     );
+    logger.info(
+      { transcription },
+      "[voicinne] FULL TRANSCRIPTION TEXT"
+    );
     res.json({ transcription });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);

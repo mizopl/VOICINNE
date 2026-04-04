@@ -17,7 +17,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { QUESTIONS_KEYS, useLanguage } from '@/contexts/LanguageContext';
 import { useColors } from '@/hooks/useColors';
-import { cloneVoice, generatePersona, transcribeAudio } from '@/utils/apiClient';
+import { cloneVoice, createAgent, generatePersona, transcribeAudio } from '@/utils/apiClient';
 
 const TOTAL_QUESTIONS = 6;
 
@@ -120,9 +120,17 @@ export default function OnboardingScreen() {
     setIsProcessing(true);
     try {
       const transcription = await transcribeAudio(uris);
-      await generatePersona(transcription);
-      await cloneVoice(uris);
-      router.push('/simulation');
+      const personaResult = await generatePersona(transcription);
+      const persona = (personaResult as { persona?: Record<string, unknown> }).persona ?? personaResult;
+      const system_prompt =
+        (persona.systemInstruction as string | undefined) ??
+        (persona.systemPrompt as string | undefined) ??
+        (persona.system_prompt as string | undefined) ??
+        JSON.stringify(persona);
+
+      const voice_id = await cloneVoice(uris);
+      const agentId = await createAgent(voice_id, system_prompt);
+      router.push({ pathname: '/simulation', params: { agentId } });
     } catch {
       setIsProcessing(false);
     }

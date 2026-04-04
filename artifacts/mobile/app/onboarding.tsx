@@ -122,15 +122,21 @@ export default function OnboardingScreen() {
       const transcription = await transcribeAudio(uris);
       const personaResult = await generatePersona(transcription);
       const persona = (personaResult as { persona?: Record<string, unknown> }).persona ?? personaResult;
+
       const system_prompt =
         (persona.systemInstruction as string | undefined) ??
         (persona.systemPrompt as string | undefined) ??
         (persona.system_prompt as string | undefined) ??
         JSON.stringify(persona);
 
+      const reveal_message =
+        (persona.reveal_message as string | undefined) ??
+        (persona.revealMessage as string | undefined) ??
+        '';
+
       const voice_id = await cloneVoice(uris);
-      const agentId = await createAgent(voice_id, system_prompt);
-      router.push({ pathname: '/simulation', params: { agentId } });
+      const { agentId, revealMessage } = await createAgent(voice_id, system_prompt, reveal_message);
+      router.push({ pathname: '/simulation', params: { agentId, revealMessage } });
     } catch {
       setIsProcessing(false);
     }

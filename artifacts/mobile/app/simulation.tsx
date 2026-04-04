@@ -26,16 +26,25 @@ import {
 const DURATION_SECONDS = 3 * 60;
 
 export default function SimulationScreen() {
-  const { agentId } = useLocalSearchParams<{ agentId: string }>();
+  const { agentId, revealMessage } = useLocalSearchParams<{
+    agentId: string;
+    revealMessage: string;
+  }>();
 
   return (
     <ConversationProvider>
-      <SimulationContent agentId={agentId ?? ''} />
+      <SimulationContent agentId={agentId ?? ''} revealMessageParam={revealMessage ?? ''} />
     </ConversationProvider>
   );
 }
 
-function SimulationContent({ agentId }: { agentId: string }) {
+function SimulationContent({
+  agentId,
+  revealMessageParam,
+}: {
+  agentId: string;
+  revealMessageParam: string;
+}) {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
@@ -45,6 +54,8 @@ function SimulationContent({ agentId }: { agentId: string }) {
   const [revealed, setRevealed] = useState(false);
   const [timerActive, setTimerActive] = useState(false);
   const [callStarted, setCallStarted] = useState(false);
+
+  const displayRevealMessage = revealMessageParam.trim() || t.revealMessage;
 
   const { startSession, endSession } = useConversationControls();
   const { status } = useConversationStatus();
@@ -188,7 +199,7 @@ function SimulationContent({ agentId }: { agentId: string }) {
             <Text style={styles.revealTitle}>{t.revealTitle}</Text>
 
             <View style={[styles.revealCard, { backgroundColor: '#1a1a1a', borderColor: '#333' }]}>
-              <Text style={styles.revealMessage}>{t.revealMessage}</Text>
+              <Text style={styles.revealMessage}>{displayRevealMessage}</Text>
             </View>
 
             <View style={[styles.safeWordBox, { backgroundColor: '#1a1a1a', borderColor: '#ef444455' }]}>

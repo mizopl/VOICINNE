@@ -93,25 +93,26 @@ export async function generatePersona(transcription: string): Promise<Record<str
 
 /**
  * POST /api/create-agent
- * Sends the cloned voice_id and Gemini system_prompt as JSON.
- * Returns the ElevenLabs ConvAI agent_id for the simulation call.
+ * Sends the cloned voice_id, Gemini system_prompt, and reveal_message as JSON.
+ * Returns the ElevenLabs ConvAI agent_id and the Gemini-generated reveal_message.
  */
 export async function createAgent(
   voice_id: string,
-  system_prompt: string
-): Promise<string> {
+  system_prompt: string,
+  reveal_message: string
+): Promise<{ agentId: string; revealMessage: string }> {
   const response = await fetch(`${API_BASE}/api/create-agent`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ voice_id, system_prompt }),
+    body: JSON.stringify({ voice_id, system_prompt, reveal_message }),
   });
 
   if (!response.ok) {
     throw new Error(`createAgent failed: ${response.status} ${response.statusText}`);
   }
 
-  const json = await response.json() as { agent_id: string };
-  return json.agent_id;
+  const json = await response.json() as { agent_id: string; reveal_message: string };
+  return { agentId: json.agent_id, revealMessage: json.reveal_message };
 }
 
 /**

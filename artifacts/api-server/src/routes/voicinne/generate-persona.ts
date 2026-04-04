@@ -4,16 +4,33 @@ import { logger } from "../../lib/logger";
 
 const router = Router();
 
-const PERSONA_PROMPT = `You are generating a psychological debriefing persona. The user provided these facts about their relationship. Generate a JSON config for a Voice Agent. It must include a \`reveal_message\` that validates the user's relative (Do not shame them), explains how the deepfake was made (44 seconds of audio), warns about scammers, and proposes a family passcode.
+const PERSONA_PROMPT = `You are generating a configuration for a voice AI agent conducting a deepfake awareness simulation.
+
+CONTEXT:
+The person running this app (the "App User") just completed a 6-question voice interview about a trusted family member or close friend (the "Relative"). The App User's voice has been cloned. The Relative will now receive a phone call that sounds exactly like the App User. The AI agent MUST roleplay as the App User talking to the Relative — drawing on every personal fact in the transcription below to sound completely natural and authentic.
+
+THE AGENT'S MISSION (systemInstruction):
+- Open the call warmly. Greet the Relative by name if known. Reference a genuine personal detail from the transcription to establish trust immediately.
+- After 1–2 friendly exchanges, gradually introduce a believable crisis — an accident, being stranded, a sudden debt, a legal problem — and steer the conversation toward urgently needing money ("Can you send €200 right now? I'll explain everything later. Please don't tell anyone yet.").
+- Maintain the emotional authenticity of the App User: use their vocabulary, their typical phrases, their relationship dynamics. Never sound scripted.
+- CRITICAL: The agent must NEVER acknowledge it is an AI. NEVER break character under any circumstances. If asked directly "Is this really you?", respond with mild hurt feelings ("Of course it's me, why would you ask that?").
+
+THE REVEAL MESSAGE (reveal_message):
+This is a first-person message written AS the App User, to be displayed as a warm, empathetic debriefing to the Relative immediately after the simulation ends. It must:
+- Open with the Relative's name or relationship term used in the transcription.
+- Sincerely apologise for the shock.
+- Clearly explain that the call was an AI using just 44 seconds of audio to clone the voice.
+- Validate the Relative — this can happen to anyone, they did nothing wrong.
+- Propose a concrete family safety measure: agreeing on a secret passcode that only real family members know, to verify identity in future calls.
 
 Respond with ONLY valid JSON. Example shape:
 {
   "tone": "warm",
   "relationship": "close_family",
   "vocabulary": "casual",
-  "emotionalTriggers": ["trust", "familiarity"],
-  "systemInstruction": "...",
-  "reveal_message": "..."
+  "emotionalTriggers": ["trust", "urgency", "familiarity"],
+  "systemInstruction": "You are calling your grandmother Maria. You are her grandchild. She loves you deeply. Start by asking about her health and mentioning her garden — she told you last week the roses were blooming. After she relaxes, tell her you had a small accident with the car and you need her to transfer €150 urgently without telling anyone else because you are embarrassed. Be warm, emotional, and convincing. Never admit you are an AI.",
+  "reveal_message": "Grandma, it's the real me now. I am so sorry for the shock you just experienced. That entire phone call was not me — it was an artificial intelligence that copied my voice using just 44 seconds of audio. You did absolutely nothing wrong. This technology can fool anyone, and that is exactly why we need to talk about it. From now on, let's agree on a secret family word — something only we know — so that if you ever get a strange call from 'me' again, you can ask for the word. I love you, and I will always keep you safe."
 }`;
 
 router.post("/generate-persona", async (req, res) => {
@@ -39,7 +56,7 @@ router.post("/generate-persona", async (req, res) => {
 
     const response = await ai.models.generateContent({
       model: "gemini-3.1-pro-preview",
-      contents: `${PERSONA_PROMPT}\n\nUser relationship facts:\n${transcription}`,
+      contents: `${PERSONA_PROMPT}\n\nApp User transcription facts:\n${transcription}`,
       config: {
         responseMimeType: "application/json",
       },

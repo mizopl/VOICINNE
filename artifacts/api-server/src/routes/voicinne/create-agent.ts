@@ -7,6 +7,7 @@ const router = Router();
 interface CreateAgentBody {
   voice_id: string;
   system_prompt: string;
+  reveal_message: string;
 }
 
 interface ElevenLabsCreateAgentResponse {
@@ -14,10 +15,15 @@ interface ElevenLabsCreateAgentResponse {
 }
 
 router.post("/create-agent", async (req, res) => {
-  const { voice_id, system_prompt } = req.body as Partial<CreateAgentBody>;
+  const { voice_id, system_prompt, reveal_message } =
+    req.body as Partial<CreateAgentBody>;
 
   logger.info(
-    { voice_id, systemPromptLength: system_prompt?.length ?? 0 },
+    {
+      voice_id,
+      systemPromptLength: system_prompt?.length ?? 0,
+      hasRevealMessage: Boolean(reveal_message),
+    },
     "[voicinne] POST /api/create-agent received"
   );
 
@@ -27,6 +33,10 @@ router.post("/create-agent", async (req, res) => {
   }
   if (!system_prompt) {
     res.status(400).json({ error: "system_prompt is required" });
+    return;
+  }
+  if (!reveal_message) {
+    res.status(400).json({ error: "reveal_message is required" });
     return;
   }
 
@@ -78,7 +88,8 @@ router.post("/create-agent", async (req, res) => {
       { agent_id, voice_id },
       "[voicinne] ConvAI agent created via ElevenLabs"
     );
-    res.json({ agent_id });
+
+    res.json({ agent_id, reveal_message });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     logger.error({ err }, "[voicinne] create-agent failed");

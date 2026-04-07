@@ -34,6 +34,14 @@ export default function HomeScreen() {
     router.push('/onboarding');
   };
 
+  const handleTestSimulation = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    router.push({
+      pathname: '/simulation',
+      params: { agentId: 'agent_9801knkb7cbtfpk8pvfe3stexj99', revealMessage: '' },
+    });
+  };
+
   const handleSelectLanguage = (lang: Language) => {
     setLanguage(lang);
     setShowLangPicker(false);
@@ -60,6 +68,18 @@ export default function HomeScreen() {
           <Ionicons name="play-circle" size={32} color={colors.primaryForeground} style={{ marginRight: 12 }} />
           <Text style={[styles.startButtonText, { color: colors.primaryForeground }]}>
             {t.startButton}
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.testButton, { borderColor: colors.border }]}
+          onPress={handleTestSimulation}
+          activeOpacity={0.7}
+          testID="test-simulation-button"
+        >
+          <Ionicons name="flask-outline" size={18} color={colors.mutedForeground} style={{ marginRight: 8 }} />
+          <Text style={[styles.testButtonText, { color: colors.mutedForeground }]}>
+            Test Simulation (skip onboarding)
           </Text>
         </TouchableOpacity>
 
@@ -168,6 +188,20 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontFamily: 'Inter_700Bold',
     letterSpacing: 0.3,
+  },
+  testButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderStyle: 'dashed',
+  },
+  testButtonText: {
+    fontSize: 14,
+    fontFamily: 'Inter_400Regular',
   },
   langButton: {
     flexDirection: 'row',

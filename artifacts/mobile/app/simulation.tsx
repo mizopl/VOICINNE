@@ -15,6 +15,8 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { Conversation } from '@elevenlabs/react';
+
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useColors } from '@/hooks/useColors';
 
@@ -171,7 +173,6 @@ function SimulationContent({
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
     try {
-      const { Conversation } = await import('@elevenlabs/client');
       const conv = await Conversation.startSession({
         agentId,
         onStatusChange: ({ status }: { status: string }) => {

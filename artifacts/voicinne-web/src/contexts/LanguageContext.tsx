@@ -1,0 +1,512 @@
+import React, { createContext, useContext, useState, useMemo, ReactNode } from 'react';
+
+export type Language = 'ENG' | 'POL' | 'SPA' | 'GER' | 'FRA' | 'ITA';
+
+export const LANGUAGE_LABELS: Record<Language, string> = {
+  ENG: 'EN',
+  POL: 'PL',
+  SPA: 'ES',
+  GER: 'DE',
+  FRA: 'FR',
+  ITA: 'IT',
+};
+
+export interface Translations {
+  appTitle: string;
+  appTagline: string;
+  appDescription: string;
+  startButton: string;
+  selectLanguage: string;
+  recordingTitle: string;
+  recordingInstructions: string;
+  onboardingSubtitle: string;
+  step1Header: string;
+  step1Desc: string;
+  step2Header: string;
+  step2Desc: string;
+  step3Header: string;
+  step3Desc: string;
+  startRecordingBtn: string;
+  promptText: string;
+  stopRecording: string;
+  recording: string;
+  recorded: string;
+  listenBack: string;
+  reRecord: string;
+  sendForCloning: string;
+  beginExperiment: string;
+  simulationTitle: string;
+  simulationSubtitle: string;
+  simulationInfo: string;
+  revealButton: string;
+  revealTitle: string;
+  revealStat: string;
+  revealStatCaption: string;
+  revealMessage: string;
+  revealRisksTitle: string;
+  timeRemaining: string;
+  safeWordPrompt: string;
+  backToHome: string;
+  aiDisclaimer: string;
+  processingVoice: string;
+  micPermissionTitle: string;
+  micPermissionDenied: string;
+  homeSlogan: string;
+  consentText: string;
+  micDenied: string;
+  scams: Array<{ label: string; desc: string }>;
+  processingSteps: string[];
+  callStatusIdle: string;
+  callStatusConnecting: string;
+  callStatusEnding: string;
+  callStatusSpeaking: string;
+  callStatusListening: string;
+  simulationDisclaimer: string;
+}
+
+const TRANSLATIONS: Record<Language, Translations> = {
+  ENG: {
+    appTitle: 'Voicinne',
+    appTagline: 'Protect your loved ones from AI voice scams.',
+    appDescription: 'Clone your own voice in just 60 seconds to safely simulate a deepfake phone call with your family. Give them the experience of an AI scam in a safe environment, so they know exactly how to protect themselves in the real world.',
+    startButton: 'Start the Simulation',
+    selectLanguage: 'Select Language',
+    recordingTitle: 'A voice clone from just 60 seconds of recording.',
+    recordingInstructions: "First, record a spoken title, for example: 'This is a phone call to my grandmother who is celebrating her birthday this weekend.' Then, immediately pretend you are having a conversation with her. Our system will extract all the necessary identity data and context from your words.",
+    onboardingSubtitle: 'Three simple steps. Sixty seconds. Maximum impact.',
+    step1Header: 'Set the Scene',
+    step1Desc: 'Start by saying aloud who you want the AI to call — e.g. "This is a call to my grandma whose birthday is tomorrow."',
+    step2Header: 'Play the Part',
+    step2Desc: 'Immediately start your fake conversation. Talk naturally as if they just picked up the phone.',
+    step3Header: 'We Do the Rest',
+    step3Desc: 'Our system clones your voice and builds a full conversational persona from your recording.',
+    startRecordingBtn: 'Start Recording (60s)',
+    promptText: 'Hello? Who is calling?',
+    stopRecording: 'Stop',
+    recording: 'Recording...',
+    recorded: 'Recording saved',
+    listenBack: 'Tap to listen back',
+    reRecord: 'Re-record',
+    sendForCloning: 'Send for Voice Cloning',
+    beginExperiment: 'Begin Experiment',
+    simulationTitle: 'Experiment Running',
+    simulationSubtitle: 'The AI is mimicking you.',
+    simulationInfo: 'The AI agent is currently mimicking your voice to speak with a loved one.',
+    revealButton: 'Reveal Experiment',
+    revealTitle: "You've Just Been Deepfaked.",
+    revealStat: '15 seconds',
+    revealStatCaption: "That's all modern AI needs to clone anyone's voice — including yours.",
+    revealMessage: "The voice you just heard was generated in real-time by an AI that cloned a voice from just 60 seconds of audio. It was designed to sound exactly like someone you trust.\n\nThis technology is already used by criminals to impersonate family members, executives, and officials — tricking people into transferring money, sharing passwords, or revealing personal information.",
+    revealRisksTitle: 'Voice is just the beginning.',
+    timeRemaining: 'Time Remaining',
+    safeWordPrompt: 'Agree on a secret code word with your family. Only you will know it — use it to instantly verify a caller is really them.',
+    backToHome: 'Back to Home',
+    aiDisclaimer: 'Educational Purpose Only: This app uses advanced Voice AI to teach cybersecurity. Audio recordings can be stored securely for educational and security audit purposes.',
+    simulationDisclaimer: "This simulation uses your device's speaker and microphone only. It does not place a real call and has no access to your phonebook. For the best effect, play it while standing next to the person you want to educate.",
+    processingVoice: 'Processing voice profile...',
+    micPermissionTitle: 'Microphone Access Required',
+    micPermissionDenied: 'Voicinne needs microphone access to record your voice. Please enable it in Settings.',
+    homeSlogan: "That's all AI needs to clone your voice.",
+    consentText: "By continuing you consent to record a 60s voice sample.\nAudio is never stored or shared beyond this session.",
+    micDenied: 'Mic access denied',
+    scams: [
+      { label: 'Fake Kidnapping', desc: "Scammers clone a child's voice to call parents demanding ransom — from a 15-second clip." },
+      { label: 'CEO Fraud', desc: "AI mimics your boss's voice, authorising an urgent six-figure wire transfer." },
+      { label: 'Voice ID Bypass', desc: 'Synthetic voices defeat bank voice-authentication systems, draining accounts silently.' },
+      { label: 'Grandparent Scam', desc: 'Elderly relatives get a call — your voice, your words — begging for emergency cash.' },
+      { label: 'Romance Manipulation', desc: 'Cloned voices sustain fake relationships across months, extracting money and secrets.' },
+      { label: 'Information Extraction', desc: 'AI impersonates family members to trick you into sharing passwords or personal data.' },
+    ],
+    processingSteps: [
+      'Uploading audio sample...',
+      'Transcribing speech to text...',
+      'Analyzing vocal timbre and pitch...',
+      'Isolating linguistic fingerprint...',
+      'Extracting relational context...',
+      'Cloning acoustic model...',
+      'Building deep fake persona...',
+      'Configuring conversational AI agent...',
+      'Finalizing neural bridge...',
+      'Synchronizing voice identity...',
+    ],
+    callStatusIdle: 'Tap to connect the AI agent',
+    callStatusConnecting: 'Connecting…',
+    callStatusEnding: 'Ending call…',
+    callStatusSpeaking: 'AI agent is speaking',
+    callStatusListening: 'Listening…',
+  },
+  POL: {
+    appTitle: 'Voicinne',
+    appTagline: 'Chroń swoich bliskich przed oszustwami głosowymi AI.',
+    appDescription: "Sklonuj swój głos w zaledwie 60 sekund, aby bezpiecznie zasymulować deepfake'ową rozmowę telefoniczną z rodziną. Daj im doświadczenie ataku AI w bezpiecznym środowisku — żeby wiedzieli, jak się bronić w prawdziwym życiu.",
+    startButton: 'Rozpocznij Symulację',
+    selectLanguage: 'Wybierz Język',
+    recordingTitle: 'Klon głosu z zaledwie 60 sekund nagrania.',
+    recordingInstructions: "Najpierw nagraj tytuł mówiony, na przykład: 'To jest rozmowa telefoniczna do mojej babci, która obchodzi swoje urodziny w ten weekend.' Następnie natychmiast udawaj, że rozmawiasz z nią.",
+    onboardingSubtitle: 'Trzy proste kroki. Sześćdziesiąt sekund. Maksymalny efekt.',
+    step1Header: 'Ustaw scenę',
+    step1Desc: 'Powiedz głośno, do kogo AI ma zadzwonić — np. „To rozmowa telefoniczna do mojej babci, która jutro obchodzi urodziny."',
+    step2Header: 'Zagraj swoją rolę',
+    step2Desc: 'Od razu zacznij fikcyjną rozmowę. Mów naturalnie, jakby ta osoba właśnie odebrała telefon.',
+    step3Header: 'Resztą zajmiemy się my',
+    step3Desc: 'Nasz system sklonuje Twój głos i zbuduje pełną personę konwersacyjną na podstawie nagrania.',
+    startRecordingBtn: 'Rozpocznij nagrywanie (60s)',
+    promptText: 'Halo? Kto mówi?',
+    stopRecording: 'Zatrzymaj',
+    recording: 'Nagrywanie...',
+    recorded: 'Nagranie zapisane',
+    listenBack: 'Dotknij, aby odsłuchać',
+    reRecord: 'Nagraj ponownie',
+    sendForCloning: 'Wyślij do klonowania głosu',
+    beginExperiment: 'Rozpocznij Eksperyment',
+    simulationTitle: 'Eksperyment Trwa',
+    simulationSubtitle: 'AI naśladuje Ciebie.',
+    simulationInfo: 'Agent AI naśladuje Twój głos, aby rozmawiać z bliską osobą.',
+    revealButton: 'Ujawnij Eksperyment',
+    revealTitle: "Właśnie Padłeś Ofiarą Deepfake'a.",
+    revealStat: '15 sekund',
+    revealStatCaption: 'Tyle wystarczy nowoczesnej AI, aby sklonować czyjkolwiek głos — włącznie z Twoim.',
+    revealMessage: 'Głos, który właśnie usłyszałeś, był wygenerowany w czasie rzeczywistym przez sztuczną inteligencję, która sklonowała go z zaledwie 60 sekund nagrania.',
+    revealRisksTitle: 'Głos to tylko początek.',
+    timeRemaining: 'Pozostały Czas',
+    safeWordPrompt: 'Ustalcie z rodziną tajne hasło bezpieczeństwa. Tylko wy je znacie — używajcie go, żeby natychmiast sprawdzić, czy dzwoniący to naprawdę ta osoba.',
+    backToHome: 'Powrót do Domu',
+    aiDisclaimer: 'Tylko do celów edukacyjnych: Ta aplikacja używa zaawansowanego głosowego AI do nauczania cyberbezpieczeństwa.',
+    simulationDisclaimer: 'Ta symulacja używa wyłącznie głośnika i mikrofonu Twojego urządzenia. Nie wykonuje prawdziwego połączenia.',
+    processingVoice: 'Przetwarzanie profilu głosu...',
+    micPermissionTitle: 'Wymagany Dostęp do Mikrofonu',
+    micPermissionDenied: 'Voicinne potrzebuje dostępu do mikrofonu. Włącz go w Ustawieniach.',
+    homeSlogan: 'Tyle wystarczy AI, by sklonować Twój głos.',
+    consentText: 'Kontynuując, wyrażasz zgodę na nagranie 60-sekundowej próbki głosu.\nAudio nie jest nigdzie przechowywane ani udostępniane poza tą sesją.',
+    micDenied: 'Odmowa dostępu do mikrofonu',
+    scams: [
+      { label: 'Fałszywe Porwanie', desc: 'Oszuści klonują głos dziecka, by zadzwonić do rodziców z żądaniem okupu — z zaledwie 15-sekundowego nagrania.' },
+      { label: 'Oszustwo CEO', desc: 'AI naśladuje głos szefa, autoryzując pilny przelew na sześciocyfrową kwotę.' },
+      { label: 'Ominięcie Weryfikacji Głosowej', desc: 'Syntetyczne głosy pokonują bankowe systemy weryfikacji, po cichu opróżniając konta.' },
+      { label: 'Oszustwo na Dziadka', desc: 'Starsi krewni odbierają telefon — Twoim głosem, Twoimi słowami — z prośbą o pilną gotówkę.' },
+      { label: 'Manipulacja Romantyczna', desc: 'Sklonowane głosy podtrzymują fałszywe relacje przez miesiące, wyłudzając pieniądze i tajemnice.' },
+      { label: 'Wyłudzanie Informacji', desc: 'AI podszywa się pod członków rodziny, nakłaniając do podania haseł lub danych osobowych.' },
+    ],
+    processingSteps: [
+      'Przesyłanie próbki audio...',
+      'Transkrypcja mowy na tekst...',
+      'Analiza barwy i tonu głosu...',
+      'Izolowanie odcisku językowego...',
+      'Ekstrakcja kontekstu relacyjnego...',
+      'Klonowanie modelu akustycznego...',
+      'Budowanie persony deepfake...',
+      'Konfigurowanie agenta AI...',
+      'Finalizowanie mostu neuronowego...',
+      'Synchronizowanie tożsamości głosowej...',
+    ],
+    callStatusIdle: 'Dotknij, aby połączyć agenta AI',
+    callStatusConnecting: 'Łączenie…',
+    callStatusEnding: 'Kończenie rozmowy…',
+    callStatusSpeaking: 'Agent AI mówi',
+    callStatusListening: 'Słucha…',
+  },
+  SPA: {
+    appTitle: 'Voicinne',
+    appTagline: 'Protege a tus seres queridos de las estafas de voz con IA.',
+    appDescription: 'Clona tu voz en tan solo 60 segundos para simular de forma segura una llamada deepfake con tu familia.',
+    startButton: 'Iniciar la Simulación',
+    selectLanguage: 'Seleccionar Idioma',
+    recordingTitle: 'Un clon de voz en tan solo 60 segundos de grabación.',
+    recordingInstructions: "Primero, graba un título hablado, por ejemplo: 'Esta es una llamada telefónica a mi abuela que celebra su cumpleaños este fin de semana.'",
+    onboardingSubtitle: 'Tres pasos simples. Sesenta segundos. Máximo impacto.',
+    step1Header: 'Prepara la escena',
+    step1Desc: 'Di en voz alta a quién quieres que llame la IA — p. ej. "Esta es una llamada a mi abuela cuyo cumpleaños es mañana."',
+    step2Header: 'Interpreta tu papel',
+    step2Desc: 'Empieza inmediatamente la conversación fingida. Habla con naturalidad como si acabaran de contestar.',
+    step3Header: 'Nosotros hacemos el resto',
+    step3Desc: 'Nuestro sistema clonará tu voz y construirá una persona conversacional completa a partir de tu grabación.',
+    startRecordingBtn: 'Iniciar grabación (60s)',
+    promptText: '¿Hola? ¿Quién llama?',
+    stopRecording: 'Detener',
+    recording: 'Grabando...',
+    recorded: 'Grabación guardada',
+    listenBack: 'Toca para escuchar',
+    reRecord: 'Volver a grabar',
+    sendForCloning: 'Enviar para clonar voz',
+    beginExperiment: 'Iniciar Experimento',
+    simulationTitle: 'Experimento en Curso',
+    simulationSubtitle: 'La IA te está imitando.',
+    simulationInfo: 'El agente de IA está imitando tu voz para hablar con un ser querido.',
+    revealButton: 'Revelar Experimento',
+    revealTitle: 'Acabas de Sufrir un Deepfake.',
+    revealStat: '15 segundos',
+    revealStatCaption: 'Eso es todo lo que necesita la IA moderna para clonar la voz de cualquier persona.',
+    revealMessage: 'La voz que acabas de escuchar fue generada en tiempo real por una IA que clonó una voz a partir de solo 60 segundos de audio.',
+    revealRisksTitle: 'La voz es solo el comienzo.',
+    timeRemaining: 'Tiempo Restante',
+    safeWordPrompt: 'Acuerda con tu familia una palabra clave secreta.',
+    backToHome: 'Volver al Inicio',
+    aiDisclaimer: 'Solo para fines educativos: Esta aplicación usa IA de voz avanzada para enseñar ciberseguridad.',
+    simulationDisclaimer: 'Esta simulación utiliza únicamente el altavoz y el micrófono de tu dispositivo.',
+    processingVoice: 'Procesando perfil de voz...',
+    micPermissionTitle: 'Acceso al Micrófono Requerido',
+    micPermissionDenied: 'Voicinne necesita acceso al micrófono.',
+    homeSlogan: 'Eso es todo lo que necesita la IA para clonar tu voz.',
+    consentText: 'Al continuar, consientes grabar una muestra de voz de 60s.',
+    micDenied: 'Acceso al micrófono denegado',
+    scams: [
+      { label: 'Secuestro Falso', desc: 'Los estafadores clonan la voz de un hijo para llamar a los padres exigiendo rescate.' },
+      { label: 'Fraude del CEO', desc: 'La IA imita la voz de tu jefe, autorizando una transferencia urgente.' },
+      { label: 'Evasión de Autenticación', desc: 'Las voces sintéticas burlan los sistemas de autenticación bancaria.' },
+      { label: 'Estafa del Abuelo', desc: 'Los familiares mayores reciben una llamada — tu voz, tus palabras.' },
+      { label: 'Manipulación Romántica', desc: 'Las voces clonadas mantienen relaciones falsas durante meses.' },
+      { label: 'Extracción de Información', desc: 'La IA se hace pasar por familiares para engañarte.' },
+    ],
+    processingSteps: [
+      'Cargando muestra de audio...',
+      'Transcribiendo voz a texto...',
+      'Analizando timbre y tono vocal...',
+      'Aislando huella lingüística...',
+      'Extrayendo contexto relacional...',
+      'Clonando modelo acústico...',
+      'Construyendo persona deepfake...',
+      'Configurando agente de IA conversacional...',
+      'Finalizando puente neuronal...',
+      'Sincronizando identidad vocal...',
+    ],
+    callStatusIdle: 'Toca para conectar al agente de IA',
+    callStatusConnecting: 'Conectando…',
+    callStatusEnding: 'Terminando llamada…',
+    callStatusSpeaking: 'El agente de IA está hablando',
+    callStatusListening: 'Escuchando…',
+  },
+  GER: {
+    appTitle: 'Voicinne',
+    appTagline: 'Schütze deine Liebsten vor KI-Stimmenbetrug.',
+    appDescription: 'Klone deine Stimme in nur 60 Sekunden, um sicher einen Deepfake-Anruf mit deiner Familie zu simulieren.',
+    startButton: 'Simulation Starten',
+    selectLanguage: 'Sprache Wählen',
+    recordingTitle: 'Ein Stimmklon aus nur 60 Sekunden Aufnahme.',
+    recordingInstructions: "Beginne mit einem gesprochenen Titel, zum Beispiel: 'Das ist ein Telefonanruf an meine Oma.'",
+    onboardingSubtitle: 'Drei einfache Schritte. Sechzig Sekunden. Maximale Wirkung.',
+    step1Header: 'Die Szene setzen',
+    step1Desc: 'Sag laut, wen die KI anrufen soll — z. B. „Das ist ein Anruf bei meiner Oma, die morgen Geburtstag hat."',
+    step2Header: 'Die Rolle spielen',
+    step2Desc: 'Beginne sofort dein Fiktivgespräch. Rede natürlich, als hättest du gerade jemanden erreicht.',
+    step3Header: 'Den Rest erledigen wir',
+    step3Desc: 'Unser System klont deine Stimme und erstellt aus der Aufnahme ein vollständiges Gesprächsprofil.',
+    startRecordingBtn: 'Aufnahme starten (60s)',
+    promptText: 'Hallo? Wer spricht da?',
+    stopRecording: 'Stoppen',
+    recording: 'Aufnahme läuft...',
+    recorded: 'Aufnahme gespeichert',
+    listenBack: 'Tippen zum Abspielen',
+    reRecord: 'Erneut aufnehmen',
+    sendForCloning: 'Zur Stimmklonierung senden',
+    beginExperiment: 'Experiment Beginnen',
+    simulationTitle: 'Experiment Läuft',
+    simulationSubtitle: 'Die KI imitiert dich.',
+    simulationInfo: 'Der KI-Agent imitiert deine Stimme, um mit einem Angehörigen zu sprechen.',
+    revealButton: 'Experiment Enthüllen',
+    revealTitle: 'Du Wurdest Soeben Deepgefaked.',
+    revealStat: '15 Sekunden',
+    revealStatCaption: 'Das ist alles, was moderne KI braucht, um die Stimme einer beliebigen Person zu klonen.',
+    revealMessage: 'Die Stimme, die du gerade gehört hast, wurde in Echtzeit von einer KI erzeugt, die eine Stimme aus nur 60 Sekunden Audio geklont hat.',
+    revealRisksTitle: 'Die Stimme ist erst der Anfang.',
+    timeRemaining: 'Verbleibende Zeit',
+    safeWordPrompt: 'Vereinbare mit deiner Familie ein geheimes Codewort.',
+    backToHome: 'Zurück zur Startseite',
+    aiDisclaimer: 'Nur zu Bildungszwecken: Diese App verwendet fortschrittliche KI-Sprachtechnologie.',
+    simulationDisclaimer: 'Diese Simulation verwendet ausschließlich den Lautsprecher und das Mikrofon deines Geräts.',
+    processingVoice: 'Stimmprofil wird verarbeitet...',
+    micPermissionTitle: 'Mikrofonzugriff Erforderlich',
+    micPermissionDenied: 'Voicinne benötigt Mikrofonzugriff.',
+    homeSlogan: 'Das ist alles, was KI braucht, um deine Stimme zu klonen.',
+    consentText: 'Indem du fortfährst, stimmst du der Aufnahme einer 60s Sprachprobe zu.',
+    micDenied: 'Mikrofonzugriff verweigert',
+    scams: [
+      { label: 'Vorgetäuschte Entführung', desc: 'Betrüger klonen die Stimme eines Kindes, um Eltern mit Lösegeldforderungen anzurufen.' },
+      { label: 'CEO-Betrug', desc: 'KI imitiert die Stimme deines Chefs und genehmigt eine dringende Überweisung.' },
+      { label: 'Umgehung der Sprachverifikation', desc: 'Synthetische Stimmen überwinden Bank-Spracherkennungssysteme.' },
+      { label: 'Enkeltrick', desc: 'Ältere Angehörige erhalten einen Anruf — deine Stimme, deine Worte.' },
+      { label: 'Romantische Manipulation', desc: 'Geklonte Stimmen halten falsche Beziehungen monatelang aufrecht.' },
+      { label: 'Informationsdiebstahl', desc: 'KI gibt sich als Familienmitglieder aus.' },
+    ],
+    processingSteps: [
+      'Audioprüfmuster wird hochgeladen...',
+      'Sprache wird in Text umgewandelt...',
+      'Klangfarbe und Tonhöhe werden analysiert...',
+      'Sprachlicher Fingerabdruck wird isoliert...',
+      'Relationaler Kontext wird extrahiert...',
+      'Akustisches Modell wird geklont...',
+      'Deepfake-Persona wird erstellt...',
+      'KI-Gesprächsagent wird konfiguriert...',
+      'Neuronale Brücke wird fertiggestellt...',
+      'Stimmidentität wird synchronisiert...',
+    ],
+    callStatusIdle: 'Tippe, um den KI-Agenten zu verbinden',
+    callStatusConnecting: 'Verbinden…',
+    callStatusEnding: 'Anruf beenden…',
+    callStatusSpeaking: 'KI-Agent spricht',
+    callStatusListening: 'Zuhören…',
+  },
+  FRA: {
+    appTitle: 'Voicinne',
+    appTagline: 'Protégez vos proches des arnaques vocales par IA.',
+    appDescription: "Clonez votre voix en seulement 60 secondes pour simuler en toute sécurité un appel deepfake avec votre famille.",
+    startButton: 'Démarrer la Simulation',
+    selectLanguage: 'Choisir la Langue',
+    recordingTitle: "Un clone vocal en seulement 60 secondes d'enregistrement.",
+    recordingInstructions: "Commencez par enregistrer un titre parlé, par exemple : 'C'est un appel téléphonique à ma grand-mère.'",
+    onboardingSubtitle: 'Trois étapes simples. Soixante secondes. Impact maximal.',
+    step1Header: 'Plantez le décor',
+    step1Desc: "Dites à voix haute qui vous voulez que l'IA appelle.",
+    step2Header: 'Jouez le jeu',
+    step2Desc: 'Commencez immédiatement votre fausse conversation.',
+    step3Header: "On s'occupe du reste",
+    step3Desc: 'Notre système clone votre voix et construit un profil conversationnel complet.',
+    startRecordingBtn: "Démarrer l'enregistrement (60s)",
+    promptText: "Allô ? Qui est à l'appareil ?",
+    stopRecording: 'Arrêter',
+    recording: 'Enregistrement...',
+    recorded: 'Enregistrement sauvegardé',
+    listenBack: 'Appuyez pour écouter',
+    reRecord: 'Réenregistrer',
+    sendForCloning: 'Envoyer pour cloner la voix',
+    beginExperiment: "Commencer l'Expérience",
+    simulationTitle: 'Expérience en Cours',
+    simulationSubtitle: "L'IA vous imite.",
+    simulationInfo: "L'agent IA imite votre voix pour parler avec un proche.",
+    revealButton: "Révéler l'Expérience",
+    revealTitle: "Vous Venez d'être Deepfaké.",
+    revealStat: '15 secondes',
+    revealStatCaption: "C'est tout ce dont l'IA moderne a besoin pour cloner la voix de n'importe qui.",
+    revealMessage: "La voix que vous venez d'entendre a été générée en temps réel par une IA qui a cloné une voix à partir de seulement 60 secondes d'audio.",
+    revealRisksTitle: "La voix n'est que le début.",
+    timeRemaining: 'Temps Restant',
+    safeWordPrompt: "Convenez avec votre famille d'un mot de code secret.",
+    backToHome: "Retour à l'Accueil",
+    aiDisclaimer: "À des fins éducatives uniquement : Cette application utilise l'IA vocale avancée pour enseigner la cybersécurité.",
+    simulationDisclaimer: "Cette simulation n'utilise que le haut-parleur et le microphone de votre appareil.",
+    processingVoice: 'Traitement du profil vocal...',
+    micPermissionTitle: 'Accès au Microphone Requis',
+    micPermissionDenied: "Voicinne a besoin d'un accès au microphone.",
+    homeSlogan: "C'est tout ce dont l'IA a besoin pour cloner votre voix.",
+    consentText: "En continuant, vous consentez à enregistrer un échantillon vocal de 60s.",
+    micDenied: 'Accès au microphone refusé',
+    scams: [
+      { label: 'Faux Enlèvement', desc: "Les arnaqueurs clonent la voix d'un enfant pour appeler les parents en demandant une rançon." },
+      { label: 'Fraude au PDG', desc: "L'IA imite la voix de votre patron, autorisant un virement urgent." },
+      { label: "Contournement d'Authentification", desc: "Les voix synthétiques trompent les systèmes d'authentification bancaire." },
+      { label: 'Arnaque aux Grands-Parents', desc: 'Les proches âgés reçoivent un appel — votre voix, vos mots.' },
+      { label: 'Manipulation Romantique', desc: 'Les voix clonées maintiennent de fausses relations pendant des mois.' },
+      { label: "Extraction d'Informations", desc: "L'IA se fait passer pour des membres de la famille." },
+    ],
+    processingSteps: [
+      "Chargement de l'échantillon audio...",
+      'Transcription de la parole en texte...',
+      'Analyse du timbre et du ton vocal...',
+      "Isolation de l'empreinte linguistique...",
+      'Extraction du contexte relationnel...',
+      'Clonage du modèle acoustique...',
+      'Construction du persona deepfake...',
+      "Configuration de l'agent IA conversationnel...",
+      'Finalisation du pont neuronal...',
+      "Synchronisation de l'identité vocale...",
+    ],
+    callStatusIdle: "Appuyez pour connecter l'agent IA",
+    callStatusConnecting: 'Connexion…',
+    callStatusEnding: "Fin de l'appel…",
+    callStatusSpeaking: "L'agent IA parle",
+    callStatusListening: 'Écoute…',
+  },
+  ITA: {
+    appTitle: 'Voicinne',
+    appTagline: 'Proteggi i tuoi cari dalle truffe vocali AI.',
+    appDescription: 'Clona la tua voce in soli 60 secondi per simulare in sicurezza una chiamata deepfake con la tua famiglia.',
+    startButton: 'Avvia la Simulazione',
+    selectLanguage: 'Seleziona Lingua',
+    recordingTitle: 'Un clone vocale da soli 60 secondi di registrazione.',
+    recordingInstructions: "Prima, registra un titolo parlato, ad esempio: 'Questa è una telefonata a mia nonna che festeggia il suo compleanno questo fine settimana.'",
+    onboardingSubtitle: 'Tre semplici passaggi. Sessanta secondi. Impatto massimo.',
+    step1Header: 'Imposta la Scena',
+    step1Desc: "Inizia dicendo ad alta voce chi vuoi che l'IA chiami.",
+    step2Header: 'Recita la Parte',
+    step2Desc: 'Inizia immediatamente la tua conversazione fittizia.',
+    step3Header: 'Pensiamo Noi al Resto',
+    step3Desc: 'Il nostro sistema clona la tua voce e costruisce un profilo conversazionale completo.',
+    startRecordingBtn: 'Inizia Registrazione (60s)',
+    promptText: 'Pronto? Chi parla?',
+    stopRecording: 'Ferma',
+    recording: 'Registrazione...',
+    recorded: 'Registrazione salvata',
+    listenBack: 'Tocca per riascoltare',
+    reRecord: 'Ri-registra',
+    sendForCloning: 'Invia per Clonazione Vocale',
+    beginExperiment: 'Inizia Esperimento',
+    simulationTitle: 'Esperimento in Corso',
+    simulationSubtitle: "L'IA ti sta imitando.",
+    simulationInfo: "L'agente IA sta imitando la tua voce per parlare con un caro.",
+    revealButton: 'Rivela Esperimento',
+    revealTitle: 'Sei Appena Stato Deepfakato.',
+    revealStat: '15 secondi',
+    revealStatCaption: "È tutto ciò di cui l'IA moderna ha bisogno per clonare la voce di chiunque.",
+    revealMessage: "La voce che hai appena sentito è stata generata in tempo reale da un'IA che ha clonato una voce da soli 60 secondi di audio.",
+    revealRisksTitle: "La voce è solo l'inizio.",
+    timeRemaining: 'Tempo Rimanente',
+    safeWordPrompt: 'Concordate con la famiglia una parola in codice segreta.',
+    backToHome: 'Torna alla Home',
+    aiDisclaimer: "Solo a scopo educativo: Questa app utilizza l'IA vocale avanzata per insegnare la sicurezza informatica.",
+    simulationDisclaimer: "Questa simulazione usa solo l'altoparlante e il microfono del tuo dispositivo.",
+    processingVoice: 'Elaborazione del profilo vocale...',
+    micPermissionTitle: 'Accesso al Microfono Richiesto',
+    micPermissionDenied: "Voicinne ha bisogno dell'accesso al microfono.",
+    homeSlogan: "È tutto ciò di cui l'IA ha bisogno per clonare la tua voce.",
+    consentText: 'Continuando acconsenti a registrare un campione vocale di 60s.',
+    micDenied: 'Accesso al microfono negato',
+    scams: [
+      { label: 'Falso Rapimento', desc: 'I truffatori clonano la voce di un bambino per chiamare i genitori chiedendo un riscatto.' },
+      { label: 'Frode del CEO', desc: "L'IA imita la voce del tuo capo, autorizzando un bonifico urgente." },
+      { label: 'Bypass Autenticazione Vocale', desc: 'Le voci sintetiche sconfiggono i sistemi di autenticazione bancaria.' },
+      { label: 'Truffa ai Nonni', desc: 'I parenti anziani ricevono una chiamata — la tua voce, le tue parole.' },
+      { label: 'Manipolazione Romantica', desc: 'Le voci clonate mantengono false relazioni per mesi.' },
+      { label: 'Estrazione di Informazioni', desc: "L'IA si spaccia per familiari per indurti a condividere password." },
+    ],
+    processingSteps: [
+      'Caricamento del campione audio...',
+      'Trascrizione del parlato in testo...',
+      'Analisi del timbro e del tono vocale...',
+      "Isolamento dell'impronta linguistica...",
+      'Estrazione del contesto relazionale...',
+      'Clonazione del modello acustico...',
+      'Costruzione della persona deepfake...',
+      "Configurazione dell'agente IA conversazionale...",
+      'Finalizzazione del ponte neurale...',
+      "Sincronizzazione dell'identità vocale...",
+    ],
+    callStatusIdle: "Tocca per connettere l'agente IA",
+    callStatusConnecting: 'Connessione…',
+    callStatusEnding: 'Chiusura chiamata…',
+    callStatusSpeaking: "L'agente IA sta parlando",
+    callStatusListening: 'In ascolto…',
+  },
+};
+
+interface LanguageContextValue {
+  language: Language;
+  setLanguage: (lang: Language) => void;
+  t: Translations;
+}
+
+const LanguageContext = createContext<LanguageContextValue | null>(null);
+
+export function LanguageProvider({ children }: { children: ReactNode }) {
+  const [language, setLanguage] = useState<Language>('ENG');
+  const t = useMemo(() => TRANSLATIONS[language], [language]);
+  return (
+    <LanguageContext.Provider value={{ language, setLanguage, t }}>
+      {children}
+    </LanguageContext.Provider>
+  );
+}
+
+export function useLanguage(): LanguageContextValue {
+  const ctx = useContext(LanguageContext);
+  if (!ctx) throw new Error('useLanguage must be used inside LanguageProvider');
+  return ctx;
+}

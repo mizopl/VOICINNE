@@ -62,6 +62,10 @@ export default function HomeScreen() {
   const ampRef = useRef(0);
   const recordingRef = useRef<Audio.Recording | null>(null);
   const waveIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const webAudioCtxRef = useRef<AudioContext | null>(null);
+  const webAnalyserRef = useRef<AnalyserNode | null>(null);
+  const webStreamRef = useRef<MediaStream | null>(null);
+  const webDataArrayRef = useRef<Uint8Array | null>(null);
   const [micActive, setMicActive] = useState(false);
   const [micDenied, setMicDenied] = useState(false);
 
@@ -76,13 +80,36 @@ export default function HomeScreen() {
   }, []);
 
   const stopMic = useCallback(async () => {
-    try {
-      await recordingRef.current?.stopAndUnloadAsync();
-    } catch {}
+    // Stop expo-av recording (native)
+    try { await recordingRef.current?.stopAndUnloadAsync(); } catch {}
     recordingRef.current = null;
+    // Stop Web Audio API resources (web)
+    try { webAnalyserRef.current?.disconnect(); } catch {}
+    webAnalyserRef.current = null;
+    webDataArrayRef.current = null;
+    try { webAudioCtxRef.current?.close(); } catch {}
+    webAudioCtxRef.current = null;
+    try { webStreamRef.current?.getTracks().forEach(t => t.stop()); } catch {}
+    webStreamRef.current = null;
     stopWaveAnimation();
     setMicActive(false);
   }, [stopWaveAnimation]);
+
+  const startWaveLoop = useCallback(() => {
+    waveIntervalRef.current = setInterval(() => {
+      // On web: read live mic level from analyser each frame
+      if (webAnalyserRef.current && webDataArrayRef.current) {
+        webAnalyserRef.current.getByteTimeDomainData(webDataArrayRef.current);
+        let max = 0;
+        for (let i = 0; i < webDataArrayRef.current.length; i++) {
+          max = Math.max(max, Math.abs(webDataArrayRef.current[i] - 128));
+        }
+        ampRef.current = 10 + (max / 128) * 38;
+      }
+      phaseRef.current += 0.05;
+      setWavePoints(buildSinePoints(phaseRef.current, ampRef.current, W, WAVE_H));
+    }, 33);
+  }, []);
 
   const toggleMic = useCallback(async () => {
     if (micActive) {
@@ -90,34 +117,48 @@ export default function HomeScreen() {
       return;
     }
     try {
-      const { granted } = await Audio.requestPermissionsAsync();
-      if (!granted) { setMicDenied(true); return; }
-      setMicDenied(false);
-
-      await Audio.setAudioModeAsync({ allowsRecordingIOS: true, playsInSilentModeIOS: true });
-
-      const { recording } = await Audio.Recording.createAsync(
-        { ...Audio.RecordingOptionsPresets.HIGH_QUALITY, isMeteringEnabled: true },
-        (status) => {
-          if (status.isRecording && status.metering != null) {
-            const normalized = Math.max(0, Math.min(1, (status.metering + 60) / 60));
-            ampRef.current = 10 + normalized * 32;
-          }
-        },
-        80,
-      );
-      recordingRef.current = recording;
-      setMicActive(true);
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-
-      waveIntervalRef.current = setInterval(() => {
-        phaseRef.current += 0.05;
-        setWavePoints(buildSinePoints(phaseRef.current, ampRef.current, W, WAVE_H));
-      }, 33);
+      if (Platform.OS === 'web') {
+        // Web: use Web Audio API directly for real-time mic metering
+        const stream = await (navigator.mediaDevices as MediaDevices).getUserMedia({ audio: true });
+        webStreamRef.current = stream;
+        const audioCtx = new AudioContext();
+        webAudioCtxRef.current = audioCtx;
+        const analyser = audioCtx.createAnalyser();
+        analyser.fftSize = 256;
+        webAnalyserRef.current = analyser;
+        webDataArrayRef.current = new Uint8Array(analyser.frequencyBinCount);
+        audioCtx.createMediaStreamSource(stream).connect(analyser);
+        ampRef.current = 14;
+        setMicDenied(false);
+        setMicActive(true);
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        startWaveLoop();
+      } else {
+        // Native: expo-av recording with metering
+        const { granted } = await Audio.requestPermissionsAsync();
+        if (!granted) { setMicDenied(true); return; }
+        setMicDenied(false);
+        await Audio.setAudioModeAsync({ allowsRecordingIOS: true, playsInSilentModeIOS: true });
+        const { recording } = await Audio.Recording.createAsync(
+          { ...Audio.RecordingOptionsPresets.HIGH_QUALITY, isMeteringEnabled: true },
+          (status) => {
+            if (status.isRecording && status.metering != null) {
+              const normalized = Math.max(0, Math.min(1, (status.metering + 60) / 60));
+              ampRef.current = 10 + normalized * 32;
+            }
+          },
+          80,
+        );
+        recordingRef.current = recording;
+        ampRef.current = 14; // baseline before first metering event
+        setMicActive(true);
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        startWaveLoop();
+      }
     } catch {
       setMicDenied(true);
     }
-  }, [micActive, stopMic]);
+  }, [micActive, stopMic, startWaveLoop]);
 
   useEffect(() => () => { stopMic(); }, [stopMic]);
 

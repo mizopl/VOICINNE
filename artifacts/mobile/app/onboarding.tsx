@@ -68,9 +68,24 @@ export default function OnboardingScreen() {
   const wavePhaseRef = useRef(0);
   const waveAmpRef = useRef(0);
   const waveIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  // Web Audio API refs for mic metering on web
+  const webAudioCtxRef = useRef<AudioContext | null>(null);
+  const webAnalyserRef = useRef<AnalyserNode | null>(null);
+  const webStreamRef = useRef<MediaStream | null>(null);
+  const webDataArrayRef = useRef<Uint8Array | null>(null);
 
   const topPad = Platform.OS === 'web' ? 67 : insets.top;
   const bottomPad = Platform.OS === 'web' ? 34 : insets.bottom;
+
+  const stopWebAudio = useCallback(() => {
+    try { webAnalyserRef.current?.disconnect(); } catch {}
+    webAnalyserRef.current = null;
+    webDataArrayRef.current = null;
+    try { webAudioCtxRef.current?.close(); } catch {}
+    webAudioCtxRef.current = null;
+    try { webStreamRef.current?.getTracks().forEach(t => t.stop()); } catch {}
+    webStreamRef.current = null;
+  }, []);
 
   const stopWaveAnimation = useCallback(() => {
     if (waveIntervalRef.current) {
@@ -79,8 +94,9 @@ export default function OnboardingScreen() {
     }
     wavePhaseRef.current = 0;
     waveAmpRef.current = 0;
+    stopWebAudio();
     setWavePoints(buildFlatPoints(W, WAVE_H));
-  }, []);
+  }, [stopWebAudio]);
 
   useEffect(() => {
     return () => {
@@ -95,6 +111,9 @@ export default function OnboardingScreen() {
         soundRef.current.unloadAsync().catch(() => {});
         soundRef.current = null;
       }
+      try { webAnalyserRef.current?.disconnect(); } catch {}
+      try { webAudioCtxRef.current?.close(); } catch {}
+      try { webStreamRef.current?.getTracks().forEach(t => t.stop()); } catch {}
     };
   }, []);
 
@@ -223,15 +242,33 @@ export default function OnboardingScreen() {
 
       const { recording } = await Audio.Recording.createAsync(
         { ...Audio.RecordingOptionsPresets.HIGH_QUALITY, isMeteringEnabled: true },
-        (status) => {
-          if (status.isRecording && status.metering != null) {
-            const normalized = Math.max(0, Math.min(1, (status.metering + 60) / 60));
+        (st) => {
+          if (st.isRecording && st.metering != null) {
+            const normalized = Math.max(0, Math.min(1, (st.metering + 60) / 60));
             waveAmpRef.current = 8 + normalized * 28;
           }
         },
         80
       );
       recordingRef.current = recording;
+
+      // Set baseline amplitude so the waveform starts moving immediately
+      waveAmpRef.current = 14;
+
+      // On web: additionally hook up a Web Audio API analyser for live mic metering
+      if (Platform.OS === 'web') {
+        try {
+          const stream = await (navigator.mediaDevices as MediaDevices).getUserMedia({ audio: true });
+          webStreamRef.current = stream;
+          const audioCtx = new AudioContext();
+          webAudioCtxRef.current = audioCtx;
+          const analyser = audioCtx.createAnalyser();
+          analyser.fftSize = 256;
+          webAnalyserRef.current = analyser;
+          webDataArrayRef.current = new Uint8Array(analyser.frequencyBinCount);
+          audioCtx.createMediaStreamSource(stream).connect(analyser);
+        } catch { /* metering won't update on web but baseline still animates */ }
+      }
 
       setShowPrompt(false);
       promptAnim.setValue(0);
@@ -241,6 +278,15 @@ export default function OnboardingScreen() {
       startPulse();
 
       waveIntervalRef.current = setInterval(() => {
+        // On web: read live mic level from Web Audio API analyser each frame
+        if (webAnalyserRef.current && webDataArrayRef.current) {
+          webAnalyserRef.current.getByteTimeDomainData(webDataArrayRef.current);
+          let max = 0;
+          for (let i = 0; i < webDataArrayRef.current.length; i++) {
+            max = Math.max(max, Math.abs(webDataArrayRef.current[i] - 128));
+          }
+          waveAmpRef.current = 10 + (max / 128) * 32;
+        }
         wavePhaseRef.current += 0.05;
         setWavePoints(buildSinePoints(wavePhaseRef.current, waveAmpRef.current, W, WAVE_H));
       }, 33);

@@ -8,7 +8,10 @@ import {
   Alert,
   Animated,
   Dimensions,
+  Modal,
   Platform,
+  Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -16,11 +19,16 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { useLanguage } from '@/contexts/LanguageContext';
+import { LANGUAGE_LABELS, Language, useLanguage } from '@/contexts/LanguageContext';
 import { cloneVoice, createAgent, generatePersona, transcribeAudio } from '@/utils/apiClient';
 import { WaveformLine, buildFlatPoints, buildSinePoints } from '@/utils/waveform';
 
 const RED = '#ef4444';
+const CARD = '#141414';
+const BORDER = '#262626';
+const FG = '#f0f0f0';
+const MUTED = '#9ca3af';
+const LANGUAGES: Language[] = ['ENG', 'POL', 'SPA', 'GER', 'FRA', 'ITA'];
 const MAX_SECONDS = 60;
 const PROMPT_TRIGGER = 30;
 const W = Dimensions.get('window').width;
@@ -32,13 +40,14 @@ type Phase = 'idle' | 'recording' | 'preview' | 'processing';
 export default function OnboardingScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { t } = useLanguage();
+  const { t, language, setLanguage } = useLanguage();
 
   const [phase, setPhase] = useState<Phase>('idle');
   const [secondsLeft, setSecondsLeft] = useState(MAX_SECONDS);
   const [showPrompt, setShowPrompt] = useState(false);
   const [recordedUri, setRecordedUri] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [showLangPicker, setShowLangPicker] = useState(false);
 
   const [stepIndex, setStepIndex] = useState(0);
   const fadeAnim = useRef(new Animated.Value(1)).current;
@@ -362,6 +371,12 @@ export default function OnboardingScreen() {
     }
   };
 
+  const handleSelectLanguage = (lang: Language) => {
+    setLanguage(lang);
+    setShowLangPicker(false);
+    Haptics.selectionAsync();
+  };
+
   const formatTime = (s: number) => {
     const secs = Math.max(0, s);
     const mins = Math.floor(secs / 60);
@@ -399,15 +414,29 @@ export default function OnboardingScreen() {
   if (phase === 'idle') {
     return (
       <View style={[styles.container, { backgroundColor: '#0a0a0a', paddingTop: topPad, paddingBottom: bottomPad }]}>
-        <View style={styles.header}>
+
+        {/* ── Top bar: back | VOICINNE | lang picker ── */}
+        <View style={styles.obTopBar}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backBtn} testID="back-button">
-            <Ionicons name="chevron-back" size={28} color="#9ca3af" />
+            <Ionicons name="chevron-back" size={28} color={MUTED} />
+          </TouchableOpacity>
+          <Text style={[styles.obWordmark, { color: FG }]}>VOICINNE</Text>
+          <TouchableOpacity
+            style={[styles.obLangBtn, { backgroundColor: CARD, borderColor: BORDER }]}
+            onPress={() => setShowLangPicker(true)}
+            activeOpacity={0.75}
+            testID="language-selector-button"
+          >
+            <Ionicons name="globe-outline" size={15} color={MUTED} />
+            <Text style={[styles.obLangBtnText, { color: MUTED }]}>{LANGUAGE_LABELS[language]}</Text>
+            <Ionicons name="chevron-down" size={13} color={MUTED} />
           </TouchableOpacity>
         </View>
 
-        {/* Flat waveform — idle state visual */}
-        <View style={styles.idleWaveContainer}>
-          <WaveformLine points={buildFlatPoints(W, WAVE_H)} color={RED} width={W} height={WAVE_H} />
+        {/* ── READ BEFORE PROCEEDING badge ── */}
+        <View style={[styles.readBadge, { backgroundColor: RED + '15', borderColor: RED + '40' }]}>
+          <Ionicons name="alert-circle-outline" size={14} color={RED} />
+          <Text style={[styles.readBadgeText, { color: RED }]}>READ BEFORE PROCEEDING</Text>
         </View>
 
         <View style={styles.idleContent}>
@@ -478,6 +507,43 @@ export default function OnboardingScreen() {
             </Text>
           </TouchableOpacity>
         </View>
+
+        {/* ── Language picker modal ── */}
+        <Modal
+          visible={showLangPicker}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setShowLangPicker(false)}
+        >
+          <Pressable style={styles.obModalOverlay} onPress={() => setShowLangPicker(false)}>
+            <Pressable style={[styles.obModalSheet, { backgroundColor: CARD }]}>
+              <Text style={[styles.obModalTitle, { color: FG }]}>{t.selectLanguage}</Text>
+              <ScrollView>
+                {LANGUAGES.map((lang) => (
+                  <TouchableOpacity
+                    key={lang}
+                    style={[
+                      styles.obLangOption,
+                      { borderBottomColor: BORDER },
+                      lang === language && { backgroundColor: RED + '22' },
+                    ]}
+                    onPress={() => handleSelectLanguage(lang)}
+                    testID={`language-option-${lang}`}
+                  >
+                    <Text style={[
+                      styles.obLangOptionText,
+                      { color: FG },
+                      lang === language && { color: RED, fontFamily: 'Inter_600SemiBold' },
+                    ]}>
+                      {LANGUAGE_LABELS[lang]}
+                    </Text>
+                    {lang === language && <Ionicons name="checkmark" size={22} color={RED} />}
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </Pressable>
+          </Pressable>
+        </Modal>
       </View>
     );
   }
@@ -625,6 +691,86 @@ const styles = StyleSheet.create({
   backBtn: {
     padding: 4,
   },
+
+  /* Onboarding top bar */
+  obTopBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingTop: 12,
+    marginBottom: 14,
+  },
+  obWordmark: {
+    fontSize: 18,
+    fontFamily: 'Inter_400Regular',
+    letterSpacing: 5,
+    fontWeight: '300',
+  },
+  obLangBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingVertical: 7,
+    paddingHorizontal: 12,
+    borderRadius: 20,
+    borderWidth: 1,
+  },
+  obLangBtnText: {
+    fontSize: 11,
+    fontFamily: 'Inter_500Medium',
+    letterSpacing: 1,
+  },
+
+  /* READ BEFORE PROCEEDING badge */
+  readBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'center',
+    gap: 6,
+    paddingVertical: 7,
+    paddingHorizontal: 14,
+    borderRadius: 24,
+    borderWidth: 1,
+    marginBottom: 10,
+  },
+  readBadgeText: {
+    fontSize: 11,
+    fontFamily: 'Inter_700Bold',
+    letterSpacing: 1.5,
+  },
+
+  /* Language picker modal */
+  obModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    justifyContent: 'flex-end',
+  },
+  obModalSheet: {
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingHorizontal: 24,
+    paddingTop: 24,
+    paddingBottom: 40,
+    maxHeight: '70%',
+  },
+  obModalTitle: {
+    fontSize: 18,
+    fontFamily: 'Inter_700Bold',
+    marginBottom: 16,
+    letterSpacing: -0.3,
+  },
+  obLangOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+  },
+  obLangOptionText: {
+    fontSize: 16,
+    fontFamily: 'Inter_500Medium',
+  },
+
   idleWaveContainer: {
     width: W,
     height: WAVE_H,

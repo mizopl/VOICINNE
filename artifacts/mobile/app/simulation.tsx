@@ -21,36 +21,8 @@ import { useColors } from '@/hooks/useColors';
 const DURATION_SECONDS = 3 * 60;
 const TEST_AGENT_ID = 'agent_9801knkb7cbtfpk8pvfe3stexj99';
 
-/**
- * Injects the ElevenLabs ConvAI web-component widget into the document body.
- * The widget renders its own floating button UI and handles mic + audio internally.
- * Only active on web — native requires an EAS dev build with native audio modules.
- */
-function useConvaiWidget(agentId: string) {
-  useEffect(() => {
-    if (Platform.OS !== 'web' || !agentId) return;
-
-    const SCRIPT_ID = 'el-convai-widget-script';
-    if (!document.getElementById(SCRIPT_ID)) {
-      const s = document.createElement('script');
-      s.id = SCRIPT_ID;
-      s.src = 'https://unpkg.com/@elevenlabs/convai-widget-embed';
-      s.async = true;
-      s.type = 'text/javascript';
-      document.body.appendChild(s);
-    }
-
-    document.querySelectorAll('elevenlabs-convai').forEach((el) => el.remove());
-
-    const widget = document.createElement('elevenlabs-convai');
-    widget.setAttribute('agent-id', agentId);
-    document.body.appendChild(widget);
-
-    return () => {
-      widget.remove();
-    };
-  }, [agentId]);
-}
+type CallStatus = 'idle' | 'connecting' | 'connected' | 'ending';
+type CallMode = 'listening' | 'speaking';
 
 export default function SimulationScreen() {
   const { agentId, revealMessage } = useLocalSearchParams<{
@@ -78,33 +50,88 @@ function SimulationContent({
   const [secondsLeft, setSecondsLeft] = useState(DURATION_SECONDS);
   const [revealed, setRevealed] = useState(false);
   const [timerActive, setTimerActive] = useState(false);
+  const [callStatus, setCallStatus] = useState<CallStatus>('idle');
+  const [callMode, setCallMode] = useState<CallMode>('listening');
+  const [callError, setCallError] = useState<string | null>(null);
 
+  const conversationRef = useRef<{ endSession: () => Promise<void> } | null>(null);
   const displayRevealMessage = revealMessageParam.trim() || t.revealMessage;
 
-  useConvaiWidget(agentId);
-
   const revealAnim = useRef(new Animated.Value(0)).current;
-  const pulseAnim = useRef(new Animated.Value(1)).current;
+  const orbScaleAnim = useRef(new Animated.Value(1)).current;
+  const ring1Anim = useRef(new Animated.Value(0.6)).current;
+  const ring2Anim = useRef(new Animated.Value(0.3)).current;
 
   const topPad = Platform.OS === 'web' ? 67 : insets.top;
   const bottomPad = Platform.OS === 'web' ? 34 : insets.bottom;
 
+  const PRIMARY = colors.primary;
+  const isActive = callStatus === 'connected' || callStatus === 'connecting';
+  const isSpeaking = callStatus === 'connected' && callMode === 'speaking';
+
+  // Orb pulse animation — speed and scale depend on call state
   useEffect(() => {
+    const speed = isSpeaking ? 350 : callStatus === 'connecting' ? 550 : 1100;
+    const scale = isSpeaking ? 1.1 : callStatus === 'connecting' ? 1.05 : 1.02;
+
     const loop = Animated.loop(
       Animated.sequence([
-        Animated.timing(pulseAnim, { toValue: 1.06, duration: 1000, useNativeDriver: true }),
-        Animated.timing(pulseAnim, { toValue: 1, duration: 1000, useNativeDriver: true }),
+        Animated.timing(orbScaleAnim, {
+          toValue: scale,
+          duration: speed,
+          useNativeDriver: true,
+        }),
+        Animated.timing(orbScaleAnim, {
+          toValue: 1,
+          duration: speed,
+          useNativeDriver: true,
+        }),
       ])
     );
     loop.start();
     return () => loop.stop();
-  }, []);
+  }, [callStatus, callMode]);
 
+  // Ripple ring animations (only while active)
+  useEffect(() => {
+    if (!isActive) {
+      ring1Anim.setValue(0.6);
+      ring2Anim.setValue(0.3);
+      return;
+    }
+    const duration = isSpeaking ? 800 : 1400;
+    const loop1 = Animated.loop(
+      Animated.sequence([
+        Animated.timing(ring1Anim, { toValue: 1.0, duration, useNativeDriver: true }),
+        Animated.timing(ring1Anim, { toValue: 0.6, duration, useNativeDriver: true }),
+      ])
+    );
+    const loop2 = Animated.loop(
+      Animated.sequence([
+        Animated.delay(duration / 2),
+        Animated.timing(ring2Anim, { toValue: 0.8, duration, useNativeDriver: true }),
+        Animated.timing(ring2Anim, { toValue: 0.2, duration, useNativeDriver: true }),
+      ])
+    );
+    loop1.start();
+    loop2.start();
+    return () => {
+      loop1.stop();
+      loop2.stop();
+    };
+  }, [isActive, isSpeaking]);
+
+  // Auto-start timer when call connects
+  useEffect(() => {
+    if (callStatus === 'connected' && !timerActive && !revealed) {
+      setTimerActive(true);
+    }
+  }, [callStatus]);
+
+  // Timer countdown
   useEffect(() => {
     if (!timerActive || secondsLeft <= 0) {
-      if (secondsLeft <= 0 && !revealed) {
-        handleReveal();
-      }
+      if (secondsLeft <= 0 && !revealed) handleReveal();
       return;
     }
     const interval = setInterval(() => {
@@ -119,10 +146,65 @@ function SimulationContent({
     return () => clearInterval(interval);
   }, [timerActive, secondsLeft]);
 
+  // Auto-end call when timer hits 0
+  useEffect(() => {
+    if (secondsLeft === 0 && (callStatus === 'connected' || callStatus === 'connecting')) {
+      terminateCall();
+    }
+  }, [secondsLeft]);
+
+  const terminateCall = async () => {
+    if (conversationRef.current) {
+      setCallStatus('ending');
+      try {
+        await conversationRef.current.endSession();
+      } catch (_) {}
+      conversationRef.current = null;
+    }
+    setCallStatus('idle');
+  };
+
+  const handleConnect = async () => {
+    if (callStatus !== 'idle') return;
+    setCallError(null);
+    setCallStatus('connecting');
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+
+    try {
+      const { Conversation } = await import('@elevenlabs/client');
+      const conv = await Conversation.startSession({
+        agentId,
+        onStatusChange: ({ status }: { status: string }) => {
+          if (status === 'connected') setCallStatus('connected');
+          if (status === 'disconnected') {
+            conversationRef.current = null;
+            setCallStatus('idle');
+          }
+        },
+        onModeChange: ({ mode }: { mode: string }) => setCallMode(mode as CallMode),
+      });
+      conversationRef.current = conv as { endSession: () => Promise<void> };
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      setCallError(
+        Platform.OS === 'web'
+          ? `Connection error: ${msg}`
+          : 'Live call requires an EAS development build with native audio modules.'
+      );
+      setCallStatus('idle');
+    }
+  };
+
+  const handleEndCall = async () => {
+    setTimerActive(false);
+    await terminateCall();
+  };
+
   const handleReveal = () => {
     if (revealed) return;
     setRevealed(true);
     setTimerActive(false);
+    terminateCall();
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
     Animated.spring(revealAnim, {
       toValue: 1,
@@ -132,21 +214,15 @@ function SimulationContent({
     }).start();
   };
 
-  const handleStartTimer = () => {
-    setTimerActive(true);
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-  };
-
   const minutes = Math.floor(secondsLeft / 60);
   const secs = secondsLeft % 60;
   const timeString = `${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
   const progressFraction = (DURATION_SECONDS - secondsLeft) / DURATION_SECONDS;
+  const isLow = progressFraction > 0.8;
 
-  const revealScale = revealAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0.85, 1],
-  });
+  const revealScale = revealAnim.interpolate({ inputRange: [0, 1], outputRange: [0.85, 1] });
 
+  // ── REVEAL SCREEN ──────────────────────────────────────────────────────────
   if (revealed) {
     return (
       <View
@@ -161,7 +237,10 @@ function SimulationContent({
             { transform: [{ scale: revealScale }], opacity: revealAnim },
           ]}
         >
-          <ScrollView contentContainerStyle={styles.revealScroll} showsVerticalScrollIndicator={false}>
+          <ScrollView
+            contentContainerStyle={styles.revealScroll}
+            showsVerticalScrollIndicator={false}
+          >
             <View style={[styles.revealIconRing, { borderColor: '#ef4444' }]}>
               <Ionicons name="eye-off" size={48} color="#ef4444" />
             </View>
@@ -172,8 +251,15 @@ function SimulationContent({
               <Text style={styles.revealMessage}>{displayRevealMessage}</Text>
             </View>
 
-            <View style={[styles.safeWordBox, { backgroundColor: '#1a1a1a', borderColor: '#ef444455' }]}>
-              <Ionicons name="shield-checkmark" size={22} color="#ef4444" style={{ marginBottom: 8 }} />
+            <View
+              style={[styles.safeWordBox, { backgroundColor: '#1a1a1a', borderColor: '#ef444455' }]}
+            >
+              <Ionicons
+                name="shield-checkmark"
+                size={22}
+                color="#ef4444"
+                style={{ marginBottom: 8 }}
+              />
               <Text style={styles.safeWordText}>{t.safeWordPrompt}</Text>
             </View>
 
@@ -192,6 +278,19 @@ function SimulationContent({
     );
   }
 
+  // ── STATUS LABEL ───────────────────────────────────────────────────────────
+  const statusLabel =
+    callStatus === 'idle'
+      ? 'Tap to connect the AI agent'
+      : callStatus === 'connecting'
+        ? 'Connecting…'
+        : callStatus === 'ending'
+          ? 'Ending call…'
+          : callMode === 'speaking'
+            ? 'AI agent is speaking'
+            : 'Listening…';
+
+  // ── CALL SCREEN ────────────────────────────────────────────────────────────
   return (
     <View
       style={[
@@ -199,91 +298,198 @@ function SimulationContent({
         { backgroundColor: colors.background, paddingTop: topPad, paddingBottom: bottomPad },
       ]}
     >
+      {/* Top bar */}
       <View style={styles.topBar}>
-        <TouchableOpacity onPress={() => router.back()} testID="back-button">
+        <TouchableOpacity
+          onPress={() => {
+            handleEndCall();
+            router.back();
+          }}
+          testID="back-button"
+          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+        >
           <Ionicons name="chevron-back" size={28} color={colors.mutedForeground} />
         </TouchableOpacity>
         <Text style={[styles.topTitle, { color: colors.foreground }]}>{t.simulationTitle}</Text>
         <View style={{ width: 28 }} />
       </View>
 
-      <View style={styles.timerSection}>
-        <Text style={[styles.timerLabel, { color: colors.mutedForeground }]}>{t.timeRemaining}</Text>
+      {/* ── CENTER SECTION ── */}
+      <View style={styles.centerSection}>
+        {/* Caller name chip */}
+        <View style={[styles.callerChip, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <View style={[styles.callerDot, { backgroundColor: isActive ? PRIMARY : '#555' }]} />
+          <Text style={[styles.callerName, { color: colors.foreground }]}>Voicinne Agent</Text>
+        </View>
 
-        <Animated.View
-          style={[
-            styles.timerRing,
-            {
-              borderColor: progressFraction > 0.8 ? '#ef4444' : colors.primary,
-              transform: [{ scale: pulseAnim }],
-            },
-          ]}
-        >
+        {/* Orb + ripple rings */}
+        <View style={styles.orbWrapper}>
+          {/* Outer ripple ring 1 */}
+          {isActive && (
+            <Animated.View
+              style={[
+                styles.rippleRing,
+                {
+                  width: 210,
+                  height: 210,
+                  borderRadius: 105,
+                  borderColor: PRIMARY,
+                  opacity: ring1Anim,
+                },
+              ]}
+            />
+          )}
+          {/* Outer ripple ring 2 */}
+          {isActive && (
+            <Animated.View
+              style={[
+                styles.rippleRing,
+                {
+                  width: 175,
+                  height: 175,
+                  borderRadius: 88,
+                  borderColor: PRIMARY,
+                  opacity: ring2Anim,
+                },
+              ]}
+            />
+          )}
+
+          {/* Main orb */}
+          <Animated.View
+            style={[
+              styles.orb,
+              {
+                backgroundColor: isActive ? PRIMARY + '22' : colors.card,
+                borderColor: isActive ? PRIMARY : colors.border,
+                transform: [{ scale: orbScaleAnim }],
+              },
+            ]}
+          >
+            <View
+              style={[
+                styles.orbInner,
+                { backgroundColor: isActive ? PRIMARY + '33' : colors.border + '55' },
+              ]}
+            >
+              <Ionicons
+                name={
+                  callStatus === 'idle'
+                    ? 'call-outline'
+                    : isSpeaking
+                      ? 'volume-high-outline'
+                      : callStatus === 'connecting'
+                        ? 'radio-outline'
+                        : 'mic-outline'
+                }
+                size={44}
+                color={isActive ? PRIMARY : colors.mutedForeground}
+              />
+            </View>
+          </Animated.View>
+        </View>
+
+        {/* Status text */}
+        <Text style={[styles.statusLabel, { color: isActive ? PRIMARY : colors.mutedForeground }]}>
+          {statusLabel}
+        </Text>
+
+        {/* Timer */}
+        <View style={styles.timerBlock}>
           <Text
             style={[
               styles.timerText,
-              { color: progressFraction > 0.8 ? '#ef4444' : colors.foreground },
+              { color: isLow ? '#ef4444' : timerActive ? colors.foreground : colors.mutedForeground },
             ]}
           >
             {timeString}
           </Text>
-        </Animated.View>
+          <Text
+            style={[
+              styles.timerSub,
+              { color: isLow ? '#ef444488' : colors.mutedForeground },
+            ]}
+          >
+            {timerActive ? 'TIME REMAINING' : 'DURATION'}
+          </Text>
+        </View>
 
-        <Text style={[styles.statusText, { color: colors.mutedForeground }]}>
-          {timerActive ? t.simulationSubtitle : t.simulationInfo}
-        </Text>
-      </View>
-
-      <View style={styles.progressBarContainer}>
-        <View style={[styles.progressBarBg, { backgroundColor: colors.border }]}>
+        {/* Progress bar */}
+        <View style={[styles.progressBg, { backgroundColor: colors.border }]}>
           <View
             style={[
-              styles.progressBarFill,
-              {
-                flex: progressFraction,
-                backgroundColor: progressFraction > 0.8 ? '#ef4444' : colors.primary,
-              },
+              styles.progressFill,
+              { flex: progressFraction, backgroundColor: isLow ? '#ef4444' : PRIMARY },
             ]}
           />
           <View style={{ flex: 1 - progressFraction }} />
         </View>
       </View>
 
-      <View style={styles.bottomSection}>
-        <View style={[styles.hintBox, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <Ionicons
-            name={Platform.OS === 'web' ? 'chatbubble-ellipses-outline' : 'construct-outline'}
-            size={20}
-            color={colors.mutedForeground}
-            style={{ marginRight: 8, marginTop: 2 }}
-          />
-          <Text style={[styles.hintText, { color: colors.mutedForeground }]}>
-            {Platform.OS === 'web'
-              ? 'Tap the voice button in the bottom-right corner to start the AI call, then press Start Timer below.'
-              : 'Live call requires an EAS development build with native audio modules.'}
-          </Text>
+      {/* Error banner */}
+      {callError && (
+        <View style={styles.errorBanner}>
+          <Ionicons name="alert-circle-outline" size={16} color="#ef4444" style={{ marginRight: 8 }} />
+          <Text style={styles.errorText}>{callError}</Text>
         </View>
+      )}
 
-        {!timerActive ? (
+      {/* ── CONTROLS ── */}
+      <View style={styles.controls}>
+        {callStatus === 'idle' ? (
           <TouchableOpacity
-            style={[styles.callButton, { backgroundColor: colors.primary }]}
-            onPress={handleStartTimer}
+            style={[styles.connectBtn, { backgroundColor: PRIMARY }]}
+            onPress={handleConnect}
             activeOpacity={0.85}
-            testID="start-timer-button"
+            testID="connect-call-button"
           >
-            <Ionicons name="timer-outline" size={24} color="#ffffff" style={{ marginRight: 10 }} />
-            <Text style={styles.callButtonText}>Start Timer</Text>
+            <Ionicons name="call" size={26} color="#fff" style={{ marginRight: 12 }} />
+            <Text style={styles.connectBtnText}>Connect Call</Text>
           </TouchableOpacity>
-        ) : null}
+        ) : (
+          <View style={styles.activeControls}>
+            <View style={styles.activeControlsRow}>
+              {/* Mic muted info — placeholder for future */}
+              <View style={[styles.controlPill, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                <Ionicons name="mic-outline" size={20} color={PRIMARY} />
+                <Text style={[styles.controlPillText, { color: colors.foreground }]}>Live</Text>
+              </View>
 
+              {/* End call */}
+              <TouchableOpacity
+                style={styles.endCallCircle}
+                onPress={handleEndCall}
+                activeOpacity={0.85}
+                testID="end-call-button"
+              >
+                <Ionicons name="call" size={28} color="#fff" style={{ transform: [{ rotate: '135deg' }] }} />
+              </TouchableOpacity>
+
+              {/* Timer status pill */}
+              <View style={[styles.controlPill, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                <Ionicons name="timer-outline" size={20} color={isLow ? '#ef4444' : PRIMARY} />
+                <Text
+                  style={[
+                    styles.controlPillText,
+                    { color: isLow ? '#ef4444' : colors.foreground },
+                  ]}
+                >
+                  {timeString}
+                </Text>
+              </View>
+            </View>
+          </View>
+        )}
+
+        {/* Reveal button — always visible */}
         <TouchableOpacity
-          style={[styles.revealButtonFull, { backgroundColor: '#ef4444' }]}
+          style={styles.revealBtn}
           onPress={handleReveal}
           activeOpacity={0.85}
           testID="reveal-experiment-button"
         >
-          <Ionicons name="eye-off-outline" size={26} color="#ffffff" style={{ marginRight: 10 }} />
-          <Text style={styles.revealButtonFullText}>{t.revealButton}</Text>
+          <Ionicons name="eye-off-outline" size={22} color="#fff" style={{ marginRight: 10 }} />
+          <Text style={styles.revealBtnText}>{t.revealButton}</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -293,104 +499,188 @@ function SimulationContent({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: 28,
+    paddingHorizontal: 24,
   },
   topBar: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingTop: 12,
-    marginBottom: 8,
+    marginBottom: 4,
   },
   topTitle: {
     fontSize: 18,
     fontFamily: 'Inter_600SemiBold',
   },
-  timerSection: {
+
+  // Center
+  centerSection: {
     flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 14,
+    paddingVertical: 8,
+  },
+  callerChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 24,
+    borderWidth: 1,
+  },
+  callerDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  callerName: {
+    fontSize: 15,
+    fontFamily: 'Inter_600SemiBold',
+  },
+
+  // Orb
+  orbWrapper: {
+    width: 220,
+    height: 220,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  rippleRing: {
+    position: 'absolute',
+    borderWidth: 1.5,
+  },
+  orb: {
+    width: 140,
+    height: 140,
+    borderRadius: 70,
+    borderWidth: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  orbInner: {
+    width: 96,
+    height: 96,
+    borderRadius: 48,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  statusLabel: {
+    fontSize: 16,
+    fontFamily: 'Inter_500Medium',
+    textAlign: 'center',
+  },
+
+  // Timer
+  timerBlock: {
+    alignItems: 'center',
+    gap: 4,
+  },
+  timerText: {
+    fontSize: 48,
+    fontFamily: 'Inter_700Bold',
+    letterSpacing: -2,
+  },
+  timerSub: {
+    fontSize: 11,
+    fontFamily: 'Inter_500Medium',
+    letterSpacing: 1.5,
+  },
+  progressBg: {
+    height: 4,
+    borderRadius: 2,
+    overflow: 'hidden',
+    flexDirection: 'row',
+    width: '100%',
+  },
+  progressFill: {
+    borderRadius: 2,
+  },
+
+  // Error
+  errorBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#ef444418',
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#ef444440',
+  },
+  errorText: {
+    flex: 1,
+    fontSize: 13,
+    fontFamily: 'Inter_400Regular',
+    color: '#ef4444',
+    lineHeight: 20,
+  },
+
+  // Controls
+  controls: {
+    gap: 12,
+    paddingBottom: 8,
+  },
+  connectBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 20,
+    borderRadius: 18,
+  },
+  connectBtnText: {
+    fontSize: 20,
+    fontFamily: 'Inter_700Bold',
+    color: '#ffffff',
+  },
+  activeControls: {
+    alignItems: 'center',
+  },
+  activeControlsRow: {
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 24,
   },
-  timerLabel: {
-    fontSize: 14,
-    fontFamily: 'Inter_500Medium',
-    letterSpacing: 1.5,
-    textTransform: 'uppercase',
-  },
-  timerRing: {
-    width: 220,
-    height: 220,
-    borderRadius: 110,
-    borderWidth: 4,
+  controlPill: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-  },
-  timerText: {
-    fontSize: 52,
-    fontFamily: 'Inter_700Bold',
-    letterSpacing: -2,
-  },
-  statusText: {
-    fontSize: 15,
-    fontFamily: 'Inter_400Regular',
-    textAlign: 'center',
-    lineHeight: 22,
-    paddingHorizontal: 16,
-  },
-  progressBarContainer: {
-    paddingVertical: 16,
-  },
-  progressBarBg: {
-    height: 6,
-    borderRadius: 3,
-    overflow: 'hidden',
-    flexDirection: 'row',
-  },
-  progressBarFill: {
-    borderRadius: 3,
-  },
-  bottomSection: {
-    gap: 14,
-    paddingBottom: 16,
-  },
-  hintBox: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    padding: 16,
-    borderRadius: 12,
+    gap: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 24,
     borderWidth: 1,
   },
-  hintText: {
-    flex: 1,
+  controlPillText: {
     fontSize: 14,
-    fontFamily: 'Inter_400Regular',
-    lineHeight: 22,
+    fontFamily: 'Inter_600SemiBold',
   },
-  callButton: {
+  endCallCircle: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: '#ef4444',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  revealBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 20,
+    backgroundColor: '#ef4444',
+    paddingVertical: 18,
     borderRadius: 18,
   },
-  callButtonText: {
-    fontSize: 20,
+  revealBtnText: {
+    fontSize: 18,
     fontFamily: 'Inter_700Bold',
     color: '#ffffff',
   },
-  revealButtonFull: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 20,
-    borderRadius: 18,
-  },
-  revealButtonFullText: {
-    fontSize: 20,
-    fontFamily: 'Inter_700Bold',
-    color: '#ffffff',
-  },
+
+  // Reveal screen
   revealContainer: {
     flex: 1,
   },

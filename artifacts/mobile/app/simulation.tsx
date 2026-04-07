@@ -475,15 +475,28 @@ function SimulationContent({
       {/* ── CONTROLS ── */}
       <View style={styles.controls}>
         {callStatus === 'idle' ? (
-          <TouchableOpacity
-            style={[styles.connectBtn, { backgroundColor: RED }]}
-            onPress={handleConnect}
-            activeOpacity={0.85}
-            testID="connect-call-button"
-          >
-            <Ionicons name="call" size={26} color="#fff" style={{ marginRight: 12 }} />
-            <Text style={styles.connectBtnText}>Connect Call</Text>
-          </TouchableOpacity>
+          <>
+            <TouchableOpacity
+              style={[styles.connectBtn, { backgroundColor: RED }]}
+              onPress={handleConnect}
+              activeOpacity={0.85}
+              testID="connect-call-button"
+            >
+              <Ionicons name="call" size={26} color="#fff" style={{ marginRight: 12 }} />
+              <Text style={styles.connectBtnText}>Connect Call</Text>
+            </TouchableOpacity>
+
+            {/* Simulation how-it-works box */}
+            <View style={[styles.simDisclaimerBox, { backgroundColor: CARD, borderColor: BORDER }]}>
+              <View style={styles.simDisclaimerRow}>
+                <Ionicons name="information-circle-outline" size={15} color={RED} style={{ marginTop: 1 }} />
+                <Text style={[styles.simDisclaimerText, { color: MUTED }]}>{t.simulationDisclaimer}</Text>
+              </View>
+            </View>
+
+            {/* Educational disclaimer */}
+            <Text style={[styles.simAiDisclaimerText, { color: '#6b7280' }]}>{t.aiDisclaimer}</Text>
+          </>
         ) : (
           <View style={styles.activeControls}>
             <View style={styles.activeControlsRow}>
@@ -635,6 +648,32 @@ const styles = StyleSheet.create({
   },
   progressFill: {
     borderRadius: 2,
+  },
+
+  // Simulation disclaimers (idle state)
+  simDisclaimerBox: {
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+  },
+  simDisclaimerRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 8,
+  },
+  simDisclaimerText: {
+    flex: 1,
+    fontSize: 12,
+    fontFamily: 'Inter_400Regular',
+    lineHeight: 18,
+  },
+  simAiDisclaimerText: {
+    fontSize: 11,
+    fontFamily: 'Inter_400Regular',
+    lineHeight: 17,
+    textAlign: 'center',
+    paddingHorizontal: 4,
   },
 
   // Error

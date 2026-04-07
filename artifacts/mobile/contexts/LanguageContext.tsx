@@ -52,6 +52,7 @@ export interface Translations {
   callStatusEnding: string;
   callStatusSpeaking: string;
   callStatusListening: string;
+  simulationDisclaimer: string;
 }
 
 const TRANSLATIONS: Record<Language, Translations> = {
@@ -94,7 +95,9 @@ const TRANSLATIONS: Record<Language, Translations> = {
     safeWordPrompt: 'Agree on a secret code word with your family. Only you will know it — use it to instantly verify a caller is really them.',
     backToHome: 'Back to Home',
     aiDisclaimer:
-      'Educational Purpose Only: This app uses advanced Voice AI to teach cybersecurity. Voice recordings are stored securely for educational and security audit purposes.',
+      'Educational Purpose Only: This app uses advanced Voice AI to teach cybersecurity. Audio recordings can be stored securely for educational and security audit purposes.',
+    simulationDisclaimer:
+      "This simulation uses your device's speaker and microphone only. It does not place a real call and has no access to your phonebook. For the best effect, play it while standing next to the person you want to educate.",
     processingVoice: 'Processing voice profile...',
     micPermissionTitle: 'Microphone Access Required',
     micPermissionDenied: 'Voicinne needs microphone access to record your voice. Please enable it in Settings.',
@@ -166,7 +169,9 @@ const TRANSLATIONS: Record<Language, Translations> = {
     safeWordPrompt: 'Ustalcie z rodziną tajne hasło bezpieczeństwa. Tylko wy je znacie — używajcie go, żeby natychmiast sprawdzić, czy dzwoniący to naprawdę ta osoba.',
     backToHome: 'Powrót do Domu',
     aiDisclaimer:
-      'Tylko do celów edukacyjnych: Ta aplikacja używa zaawansowanej sztucznej inteligencji do nauczania cyberbezpieczeństwa. Nagrania głosowe są bezpiecznie przechowywane w celach edukacyjnych i audytu bezpieczeństwa.',
+      'Tylko do celów edukacyjnych: Ta aplikacja używa zaawansowanego głosowego AI do nauczania cyberbezpieczeństwa. Nagrania audio mogą być bezpiecznie przechowywane w celach edukacyjnych i audytu bezpieczeństwa.',
+    simulationDisclaimer:
+      'Ta symulacja używa wyłącznie głośnika i mikrofonu Twojego urządzenia. Nie wykonuje prawdziwego połączenia i nie ma dostępu do Twojej książki adresowej. Dla najlepszego efektu uruchom ją stojąc obok osoby, którą chcesz edukować.',
     processingVoice: 'Przetwarzanie profilu głosu...',
     micPermissionTitle: 'Wymagany Dostęp do Mikrofonu',
     micPermissionDenied: 'Voicinne potrzebuje dostępu do mikrofonu. Włącz go w Ustawieniach.',
@@ -238,7 +243,9 @@ const TRANSLATIONS: Record<Language, Translations> = {
     safeWordPrompt: 'Acuerda con tu familia una palabra clave secreta. Solo vosotros la sabréis — usadla para verificar al instante que quien llama es realmente quien dice ser.',
     backToHome: 'Volver al Inicio',
     aiDisclaimer:
-      'Solo para fines educativos: Esta aplicación usa IA de voz avanzada para enseñar ciberseguridad. Las grabaciones de voz se almacenan de forma segura con fines educativos y de auditoría de seguridad.',
+      'Solo para fines educativos: Esta aplicación usa IA de voz avanzada para enseñar ciberseguridad. Las grabaciones de audio pueden almacenarse de forma segura con fines educativos y de auditoría de seguridad.',
+    simulationDisclaimer:
+      'Esta simulación utiliza únicamente el altavoz y el micrófono de tu dispositivo. No realiza una llamada real y no tiene acceso a tu agenda de contactos. Para el mejor efecto, reprodúcela estando junto a la persona que deseas educar.',
     processingVoice: 'Procesando perfil de voz...',
     micPermissionTitle: 'Acceso al Micrófono Requerido',
     micPermissionDenied: 'Voicinne necesita acceso al micrófono. Actívalo en Ajustes.',
@@ -310,7 +317,9 @@ const TRANSLATIONS: Record<Language, Translations> = {
     safeWordPrompt: 'Vereinbare mit deiner Familie ein geheimes Codewort. Nur ihr kennt es — nutzt es, um sofort zu prüfen, ob ein Anrufer wirklich derjenige ist, der er zu sein behauptet.',
     backToHome: 'Zurück zur Startseite',
     aiDisclaimer:
-      'Nur zu Bildungszwecken: Diese App verwendet fortschrittliche KI-Sprachtechnologie, um Cybersicherheit zu vermitteln. Sprachaufnahmen werden sicher für Bildungs- und Sicherheitsauditzwecke gespeichert.',
+      'Nur zu Bildungszwecken: Diese App verwendet fortschrittliche KI-Sprachtechnologie, um Cybersicherheit zu vermitteln. Audioaufnahmen können sicher für Bildungs- und Sicherheitsauditzwecke gespeichert werden.',
+    simulationDisclaimer:
+      'Diese Simulation verwendet ausschließlich den Lautsprecher und das Mikrofon deines Geräts. Sie tätigt keine echten Anrufe und hat keinen Zugriff auf dein Adressbuch. Den besten Effekt erzielst du, wenn du sie neben der Person abspielst, die du aufklären möchtest.',
     processingVoice: 'Stimmprofil wird verarbeitet...',
     micPermissionTitle: 'Mikrofonzugriff Erforderlich',
     micPermissionDenied: 'Voicinne benötigt Mikrofonzugriff. Bitte aktiviere ihn in den Einstellungen.',
@@ -382,7 +391,9 @@ const TRANSLATIONS: Record<Language, Translations> = {
     safeWordPrompt: 'Convenez avec votre famille d\'un mot de code secret. Vous seuls le connaîtrez — utilisez-le pour vérifier immédiatement qu\'un appelant est vraiment qui il prétend être.',
     backToHome: 'Retour à l\'Accueil',
     aiDisclaimer:
-      'À des fins éducatives uniquement : Cette application utilise une IA vocale avancée pour enseigner la cybersécurité. Les enregistrements vocaux sont stockés en toute sécurité à des fins éducatives et d\'audit de sécurité.',
+      "À des fins éducatives uniquement : Cette application utilise une IA vocale avancée pour enseigner la cybersécurité. Les enregistrements audio peuvent être stockés en toute sécurité à des fins éducatives et d'audit de sécurité.",
+    simulationDisclaimer:
+      "Cette simulation utilise uniquement le haut-parleur et le microphone de votre appareil. Elle ne passe pas de vrai appel et n'a pas accès à votre répertoire. Pour le meilleur effet, jouez-la en étant à côté de la personne que vous souhaitez sensibiliser.",
     processingVoice: 'Traitement du profil vocal...',
     micPermissionTitle: 'Accès au Microphone Requis',
     micPermissionDenied: 'Voicinne nécessite l\'accès au microphone. Activez-le dans les Paramètres.',
@@ -454,7 +465,9 @@ const TRANSLATIONS: Record<Language, Translations> = {
     safeWordPrompt: 'Concordate con la vostra famiglia una parola d\'ordine segreta. Solo voi la conoscerete — usatela per verificare immediatamente che chi chiama sia davvero chi dice di essere.',
     backToHome: 'Torna alla Home',
     aiDisclaimer:
-      'Solo a scopo educativo: Questa app utilizza un\'IA vocale avanzata per insegnare la cybersicurezza. Le registrazioni vocali vengono archiviate in modo sicuro per scopi educativi e di audit della sicurezza.',
+      "Solo a scopo educativo: Questa app utilizza un'IA vocale avanzata per insegnare la cybersicurezza. Le registrazioni audio possono essere archiviate in modo sicuro per scopi educativi e di audit della sicurezza.",
+    simulationDisclaimer:
+      "Questa simulazione utilizza solo l'altoparlante e il microfono del tuo dispositivo. Non effettua chiamate reali e non ha accesso alla tua rubrica. Per il miglior effetto, riproducila mentre sei accanto alla persona che vuoi sensibilizzare.",
     processingVoice: 'Elaborazione profilo vocale...',
     micPermissionTitle: 'Accesso al Microfono Richiesto',
     micPermissionDenied: 'Voicinne necessita l\'accesso al microfono. Abilitalo nelle Impostazioni.',

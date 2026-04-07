@@ -319,14 +319,14 @@ function SimulationContent({
   // ── STATUS LABEL ───────────────────────────────────────────────────────────
   const statusLabel =
     callStatus === 'idle'
-      ? 'Tap to connect the AI agent'
+      ? t.callStatusIdle
       : callStatus === 'connecting'
-        ? 'Connecting…'
+        ? t.callStatusConnecting
         : callStatus === 'ending'
-          ? 'Ending call…'
+          ? t.callStatusEnding
           : callMode === 'speaking'
-            ? 'AI agent is speaking'
-            : 'Listening…';
+            ? t.callStatusSpeaking
+            : t.callStatusListening;
 
   // ── CALL SCREEN ────────────────────────────────────────────────────────────
   return (

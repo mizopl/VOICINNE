@@ -31,14 +31,6 @@ const BORDER = '#262626';
 const FG = '#f0f0f0';
 const MUTED = '#9ca3af';
 
-const SCAMS = [
-  { label: 'Fake Kidnapping', desc: "Scammers clone a child's voice to call parents demanding ransom — from a 15-second clip." },
-  { label: 'CEO Fraud', desc: "AI mimics your boss's voice, authorising an urgent six-figure wire transfer." },
-  { label: 'Voice ID Bypass', desc: 'Synthetic voices defeat bank voice-authentication systems, draining accounts silently.' },
-  { label: 'Grandparent Scam', desc: 'Elderly relatives get a call — your voice, your words — begging for emergency cash.' },
-  { label: 'Romance Manipulation', desc: 'Cloned voices sustain fake relationships across months, extracting money and secrets.' },
-  { label: 'Information Extraction', desc: 'AI impersonates family members to trick you into sharing passwords or personal data.' },
-];
 
 /* ── Waveform dimensions ─────────────────────────────────────── */
 
@@ -167,29 +159,25 @@ export default function HomeScreen() {
   const fadeAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
+    setScamIdx(0);
+  }, [t]);
+
+  useEffect(() => {
     const id = setInterval(() => {
       Animated.timing(fadeAnim, { toValue: 0, duration: 380, useNativeDriver: true }).start(() => {
-        setScamIdx(i => (i + 1) % SCAMS.length);
+        setScamIdx(i => (i + 1) % t.scams.length);
         Animated.timing(fadeAnim, { toValue: 1, duration: 420, useNativeDriver: true }).start();
       });
     }, 4200);
     return () => clearInterval(id);
-  }, [fadeAnim]);
+  }, [fadeAnim, t]);
 
-  const scam = SCAMS[scamIdx];
+  const scam = t.scams[scamIdx] ?? t.scams[0];
 
   /* ── Navigation ─────────────────────────────────────────────── */
   const handleStart = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
     router.push('/onboarding');
-  };
-
-  const handleTestSimulation = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    router.push({
-      pathname: '/simulation',
-      params: { agentId: 'agent_9801knkb7cbtfpk8pvfe3stexj99', revealMessage: '' },
-    });
   };
 
   const handleSelectLanguage = (lang: Language) => {
@@ -243,7 +231,7 @@ export default function HomeScreen() {
           <Ionicons name={micActive ? 'mic' : 'mic-outline'} size={15} color={micActive ? '#fff' : MUTED} />
         </TouchableOpacity>
         {micDenied && (
-          <Text style={styles.micDenied}>Mic access denied</Text>
+          <Text style={styles.micDenied}>{t.micDenied}</Text>
         )}
       </View>
 
@@ -254,15 +242,13 @@ export default function HomeScreen() {
           <Text style={styles.statUnit}>s</Text>
         </View>
         <Text style={[styles.slogan, { color: FG }]}>
-          That's all AI needs to clone your voice.
+          {t.homeSlogan}
         </Text>
       </View>
 
       {/* ── Explanation ──────────────────────────────────────────── */}
       <Text style={[styles.explanation, { color: MUTED }]}>
-        We'll clone your voice from a 60-second recording, then use it to call one of
-        your closest ones — so they hear, firsthand, how convincingly AI can impersonate
-        someone they trust.
+        {t.appDescription}
       </Text>
 
       {/* ── Scam Ticker ──────────────────────────────────────────── */}
@@ -280,7 +266,7 @@ export default function HomeScreen() {
 
       {/* Pagination dots */}
       <View style={styles.dotsRow}>
-        {SCAMS.map((_, i) => (
+        {t.scams.map((_, i) => (
           <TouchableOpacity
             key={i}
             onPress={() => {
@@ -310,21 +296,8 @@ export default function HomeScreen() {
 
       {/* Consent */}
       <Text style={[styles.consent, { color: MUTED }]}>
-        By continuing you consent to record a 60s voice sample.{'\n'}Audio is never stored or shared beyond this session.
+        {t.consentText}
       </Text>
-
-      {/* Dev — test simulation shortcut */}
-      <TouchableOpacity
-        style={[styles.testBtn, { borderColor: BORDER }]}
-        onPress={handleTestSimulation}
-        activeOpacity={0.7}
-        testID="test-simulation-button"
-      >
-        <Ionicons name="flask-outline" size={16} color={MUTED} style={{ marginRight: 6 }} />
-        <Text style={[styles.testBtnText, { color: MUTED }]}>
-          Test Simulation (skip onboarding)
-        </Text>
-      </TouchableOpacity>
 
       {/* ── Language picker modal ─────────────────────────────────── */}
       <Modal
@@ -573,22 +546,6 @@ const styles = StyleSheet.create({
     lineHeight: 16,
     marginBottom: 20,
     letterSpacing: 0.2,
-  },
-
-  /* Test button */
-  testBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 12,
-    borderRadius: 12,
-    borderWidth: 1,
-    marginBottom: 8,
-  },
-  testBtnText: {
-    fontSize: 12,
-    fontFamily: 'Inter_500Medium',
-    letterSpacing: 0.3,
   },
 
   /* Modal */

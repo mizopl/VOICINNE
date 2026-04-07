@@ -26,18 +26,6 @@ const PROMPT_TRIGGER = 30;
 const W = Dimensions.get('window').width;
 const WAVE_H = 64;
 
-const PROCESSING_STEPS = [
-  'Uploading audio sample...',
-  'Transcribing speech to text...',
-  'Analyzing vocal timbre and pitch...',
-  'Isolating linguistic fingerprint...',
-  'Extracting relational context...',
-  'Cloning acoustic model...',
-  'Building deep fake persona...',
-  'Configuring conversational AI agent...',
-  'Finalizing neural bridge...',
-  'Synchronizing voice identity...',
-];
 
 type Phase = 'idle' | 'recording' | 'preview' | 'processing';
 
@@ -123,7 +111,7 @@ export default function OnboardingScreen() {
       duration: 300,
       useNativeDriver: true,
     }).start(() => {
-      setStepIndex((prev) => (prev + 1) % PROCESSING_STEPS.length);
+      setStepIndex((prev) => (prev + 1) % t.processingSteps.length);
       Animated.timing(fadeAnim, {
         toValue: 1,
         duration: 400,
@@ -400,7 +388,7 @@ export default function OnboardingScreen() {
           <Animated.Text
             style={[styles.processingStatus, { color: '#f0f0f0', opacity: fadeAnim }]}
           >
-            {PROCESSING_STEPS[stepIndex]}
+            {(t.processingSteps[stepIndex] ?? t.processingSteps[0])}
           </Animated.Text>
         </View>
       </View>

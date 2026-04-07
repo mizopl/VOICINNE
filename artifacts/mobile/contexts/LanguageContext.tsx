@@ -78,7 +78,7 @@ const TRANSLATIONS: Record<Language, Translations> = {
     safeWordPrompt: 'Establish a safety word with your loved ones.',
     backToHome: 'Back to Home',
     aiDisclaimer:
-      'Educational Purpose Only: This app uses advanced Voice AI to teach cybersecurity. Voice recordings are stored securely for educational and security audit purposes.',
+      '⚠️ Educational Purpose Only: This app uses advanced Voice AI to teach cybersecurity. Voice recordings are stored securely for educational and security audit purposes.',
     processingVoice: 'Processing voice profile...',
     micPermissionTitle: 'Microphone Access Required',
     micPermissionDenied: 'Voicinne needs microphone access to record your voice. Please enable it in Settings.',

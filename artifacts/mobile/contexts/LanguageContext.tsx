@@ -102,7 +102,7 @@ const TRANSLATIONS: Record<Language, Translations> = {
     micPermissionTitle: 'Microphone Access Required',
     micPermissionDenied: 'Voicinne needs microphone access to record your voice. Please enable it in Settings.',
     homeSlogan: "That's all AI needs to clone your voice.",
-    consentText: "By continuing you consent to record a 60s voice sample.\nAudio is never stored or shared beyond this session.",
+    consentText: "Educational Purpose Only: This app uses advanced Voice AI to teach cybersecurity. Audio recordings can be stored securely for educational and security audit purposes.",
     micDenied: 'Mic access denied',
     scams: [
       { label: 'Fake Kidnapping', desc: "Scammers clone a child's voice to call parents demanding ransom — from a 15-second clip." },
@@ -176,7 +176,7 @@ const TRANSLATIONS: Record<Language, Translations> = {
     micPermissionTitle: 'Wymagany Dostęp do Mikrofonu',
     micPermissionDenied: 'Voicinne potrzebuje dostępu do mikrofonu. Włącz go w Ustawieniach.',
     homeSlogan: 'Tyle wystarczy AI, by sklonować Twój głos.',
-    consentText: 'Kontynuując, wyrażasz zgodę na nagranie 60-sekundowej próbki głosu.\nAudio nie jest nigdzie przechowywane ani udostępniane poza tą sesją.',
+    consentText: 'Tylko do celów edukacyjnych: Ta aplikacja używa zaawansowanego głosowego AI do nauczania cyberbezpieczeństwa. Nagrania audio mogą być bezpiecznie przechowywane w celach edukacyjnych i audytu bezpieczeństwa.',
     micDenied: 'Odmowa dostępu do mikrofonu',
     scams: [
       { label: 'Fałszywe Porwanie', desc: 'Oszuści klonują głos dziecka, by zadzwonić do rodziców z żądaniem okupu — z zaledwie 15-sekundowego nagrania.' },
@@ -250,7 +250,7 @@ const TRANSLATIONS: Record<Language, Translations> = {
     micPermissionTitle: 'Acceso al Micrófono Requerido',
     micPermissionDenied: 'Voicinne necesita acceso al micrófono. Actívalo en Ajustes.',
     homeSlogan: 'Eso es todo lo que necesita la IA para clonar tu voz.',
-    consentText: 'Al continuar, consientes grabar una muestra de voz de 60s.\nEl audio nunca se almacena ni comparte más allá de esta sesión.',
+    consentText: 'Solo para fines educativos: Esta aplicación usa IA de voz avanzada para enseñar ciberseguridad. Las grabaciones de audio pueden almacenarse de forma segura con fines educativos y de auditoría de seguridad.',
     micDenied: 'Acceso al micrófono denegado',
     scams: [
       { label: 'Secuestro Falso', desc: 'Los estafadores clonan la voz de un hijo para llamar a los padres exigiendo rescate — con un clip de 15 segundos.' },
@@ -324,7 +324,7 @@ const TRANSLATIONS: Record<Language, Translations> = {
     micPermissionTitle: 'Mikrofonzugriff Erforderlich',
     micPermissionDenied: 'Voicinne benötigt Mikrofonzugriff. Bitte aktiviere ihn in den Einstellungen.',
     homeSlogan: 'Das ist alles, was KI braucht, um deine Stimme zu klonen.',
-    consentText: 'Indem du fortfährst, stimmst du der Aufnahme einer 60s Sprachprobe zu.\nAudios werden nicht gespeichert oder über diese Sitzung hinaus geteilt.',
+    consentText: 'Nur zu Bildungszwecken: Diese App verwendet fortschrittliche KI-Sprachtechnologie, um Cybersicherheit zu vermitteln. Audioaufnahmen können sicher für Bildungs- und Sicherheitsauditzwecke gespeichert werden.',
     micDenied: 'Mikrofonzugriff verweigert',
     scams: [
       { label: 'Vorgetäuschte Entführung', desc: 'Betrüger klonen die Stimme eines Kindes, um Eltern mit Lösegeldforderungen anzurufen — aus einem 15-Sekunden-Clip.' },
@@ -398,7 +398,7 @@ const TRANSLATIONS: Record<Language, Translations> = {
     micPermissionTitle: 'Accès au Microphone Requis',
     micPermissionDenied: 'Voicinne nécessite l\'accès au microphone. Activez-le dans les Paramètres.',
     homeSlogan: "C'est tout ce dont l'IA a besoin pour cloner votre voix.",
-    consentText: "En continuant, vous consentez à enregistrer un échantillon vocal de 60s.\nL'audio n'est jamais stocké ni partagé au-delà de cette session.",
+    consentText: "À des fins éducatives uniquement : Cette application utilise une IA vocale avancée pour enseigner la cybersécurité. Les enregistrements audio peuvent être stockés en toute sécurité à des fins éducatives et d'audit de sécurité.",
     micDenied: "Accès au microphone refusé",
     scams: [
       { label: 'Faux Enlèvement', desc: "Les escrocs clonent la voix d'un enfant pour appeler les parents en exigeant une rançon — à partir d'un clip de 15 secondes." },
@@ -472,7 +472,7 @@ const TRANSLATIONS: Record<Language, Translations> = {
     micPermissionTitle: 'Accesso al Microfono Richiesto',
     micPermissionDenied: 'Voicinne necessita l\'accesso al microfono. Abilitalo nelle Impostazioni.',
     homeSlogan: "È tutto ciò di cui l'IA ha bisogno per clonare la tua voce.",
-    consentText: "Continuando, acconsenti a registrare un campione vocale di 60s.\nL'audio non viene mai archiviato né condiviso oltre questa sessione.",
+    consentText: "Solo a scopo educativo: Questa app utilizza un'IA vocale avanzata per insegnare la cybersicurezza. Le registrazioni audio possono essere archiviate in modo sicuro per scopi educativi e di audit della sicurezza.",
     micDenied: "Accesso al microfono negato",
     scams: [
       { label: 'Falso Rapimento', desc: 'I truffatori clonano la voce di un figlio per chiamare i genitori chiedendo un riscatto — da un clip di 15 secondi.' },

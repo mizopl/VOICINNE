@@ -119,6 +119,26 @@ export async function createAgent(
 }
 
 /**
+ * GET /api/get-conversation-token?agentId=xxx
+ * Exchanges the ElevenLabs agent ID for a short-lived signed WebSocket URL.
+ * The signed URL is passed to startSession({ signedUrl }) so the API key
+ * never has to live on the client.
+ */
+export async function getConversationToken(agentId: string): Promise<string> {
+  const url = new URL(`${API_BASE}/api/get-conversation-token`);
+  url.searchParams.set('agentId', agentId);
+
+  const response = await fetch(url.toString());
+
+  if (!response.ok) {
+    throw new Error(`getConversationToken failed: ${response.status} ${response.statusText}`);
+  }
+
+  const json = await response.json() as { signedUrl: string };
+  return json.signedUrl;
+}
+
+/**
  * POST /api/clone-voice
  * Sends all recorded audio files as multipart/form-data.
  * Returns the ElevenLabs voice_id of the cloned voice.

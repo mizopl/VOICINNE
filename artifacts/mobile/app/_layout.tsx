@@ -18,11 +18,17 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 
 if (Platform.OS !== 'web') {
-  // registerGlobals patches the global scope with WebRTC APIs required by LiveKit
-  // for native iOS/Android. Must be called once before any WebRTC usage.
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const lk = require('@livekit/react-native') as { registerGlobals: () => void };
-  lk.registerGlobals();
+  // registerGlobals patches the global scope with WebRTC APIs required by
+  // @elevenlabs/react-native on iOS/Android. Must run before any WebRTC usage.
+  // Wrapped in try/catch so Expo Go (which lacks the native module) doesn't crash;
+  // the live call simply won't connect in that environment.
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const lk = require('@livekit/react-native') as { registerGlobals: () => void };
+    lk.registerGlobals();
+  } catch (e) {
+    console.warn('[Voicinne] WebRTC globals unavailable — live call requires an EAS dev build:', e);
+  }
 }
 
 SplashScreen.preventAutoHideAsync();

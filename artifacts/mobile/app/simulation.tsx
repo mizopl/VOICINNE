@@ -52,10 +52,17 @@ function SimulationContent({
   const [revealed, setRevealed] = useState(false);
   const [timerActive, setTimerActive] = useState(false);
   const [callStarted, setCallStarted] = useState(false);
+  const [connectError, setConnectError] = useState<string | null>(null);
 
   const displayRevealMessage = revealMessageParam.trim() || t.revealMessage;
 
-  const { startSession, endSession, status, isSpeaking } = useConversation();
+  const { startSession, endSession, status, isSpeaking } = useConversation({
+    onError: (error: unknown) => {
+      const msg = error instanceof Error ? error.message : String(error);
+      setConnectError(msg);
+      setCallStarted(false);
+    },
+  });
 
   const revealAnim = useRef(new Animated.Value(0)).current;
   const pulseAnim = useRef(new Animated.Value(1)).current;
@@ -151,6 +158,7 @@ function SimulationContent({
 
   const handleConnect = () => {
     if (!agentId) return;
+    setConnectError(null);
     setCallStarted(true);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     startSession({ agentId });
@@ -306,6 +314,13 @@ function SimulationContent({
           </Text>
         </View>
 
+        {connectError ? (
+          <View style={styles.errorBanner}>
+            <Ionicons name="alert-circle-outline" size={18} color="#ef4444" style={{ marginRight: 8 }} />
+            <Text style={styles.errorBannerText}>{connectError}</Text>
+          </View>
+        ) : null}
+
         {!callStarted ? (
           <TouchableOpacity
             style={[styles.callButton, { backgroundColor: colors.primary, opacity: agentId ? 1 : 0.5 }]}
@@ -445,6 +460,22 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: 'Inter_400Regular',
     lineHeight: 22,
+  },
+  errorBanner: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: '#2d0d0d',
+    borderColor: '#ef4444',
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 14,
+  },
+  errorBannerText: {
+    flex: 1,
+    fontSize: 13,
+    fontFamily: 'Inter_400Regular',
+    color: '#ef4444',
+    lineHeight: 20,
   },
   callButton: {
     flexDirection: 'row',

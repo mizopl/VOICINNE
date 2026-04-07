@@ -524,7 +524,7 @@ const styles = StyleSheet.create({
   stepDesc: {
     fontSize: 14,
     fontFamily: 'Inter_400Regular',
-    lineHeight: 21,
+    lineHeight: 28,
   },
   bottomSection: {
     paddingBottom: 16,

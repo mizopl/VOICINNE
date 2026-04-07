@@ -330,10 +330,17 @@ export default function HomeScreen() {
         <Text style={styles.startBtnText}>{t.startButton}</Text>
       </TouchableOpacity>
 
-      {/* Consent */}
-      <Text style={[styles.consent, { color: MUTED }]}>
-        {t.consentText}
-      </Text>
+      {/* Educational disclaimer — warning card */}
+      <View style={styles.warningCard}>
+        <View style={styles.warningCardAccent} />
+        <View style={styles.warningCardBody}>
+          <View style={styles.warningCardHeader}>
+            <Ionicons name="warning-outline" size={15} color="#f59e0b" />
+            <Text style={styles.warningCardTitle}>IMPORTANT</Text>
+          </View>
+          <Text style={styles.warningCardText}>{t.consentText}</Text>
+        </View>
+      </View>
 
       {/* ── Language picker modal ─────────────────────────────────── */}
       <Modal
@@ -575,14 +582,42 @@ const styles = StyleSheet.create({
     color: '#ffffff',
   },
 
-  /* Consent */
-  consent: {
-    fontSize: 10,
-    fontFamily: 'Inter_400Regular',
-    textAlign: 'center',
-    lineHeight: 16,
+  /* Warning card — educational disclaimer */
+  warningCard: {
+    flexDirection: 'row',
+    borderWidth: 1,
+    borderColor: 'rgba(245,158,11,0.31)',
+    borderRadius: 12,
+    overflow: 'hidden',
     marginBottom: 20,
-    letterSpacing: 0.2,
+    backgroundColor: 'rgba(245,158,11,0.05)',
+  },
+  warningCardAccent: {
+    width: 4,
+    backgroundColor: '#f59e0b',
+  },
+  warningCardBody: {
+    flex: 1,
+    paddingHorizontal: 12,
+    paddingVertical: 11,
+    gap: 5,
+  },
+  warningCardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  warningCardTitle: {
+    fontSize: 11,
+    fontFamily: 'Inter_700Bold',
+    letterSpacing: 1.2,
+    color: '#f59e0b',
+  },
+  warningCardText: {
+    fontSize: 12,
+    fontFamily: 'Inter_400Regular',
+    lineHeight: 18,
+    color: '#9ca3af',
   },
 
   /* Modal */

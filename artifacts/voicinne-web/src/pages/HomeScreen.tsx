@@ -259,8 +259,24 @@ export default function HomeScreen({ onStart }: HomeScreenProps) {
         {t.startButton}
       </button>
 
-      {/* Consent */}
-      <p style={{ fontSize: 11, color: MUTED, textAlign: 'center', lineHeight: 1.6, whiteSpace: 'pre-line' }}>{t.consentText}</p>
+      {/* Educational disclaimer — warning card */}
+      <div style={{
+        display: 'flex', border: '1px solid rgba(245,158,11,0.31)', borderRadius: 12,
+        overflow: 'hidden', background: 'rgba(245,158,11,0.05)', marginBottom: 8,
+      }}>
+        <div style={{ width: 4, background: '#f59e0b', flexShrink: 0 }} />
+        <div style={{ flex: 1, padding: '11px 12px', display: 'flex', flexDirection: 'column', gap: 5 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+              <line x1="12" y1="9" x2="12" y2="13"/>
+              <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+            <span style={{ fontSize: 11, fontWeight: 700, color: '#f59e0b', letterSpacing: 1.2 }}>IMPORTANT</span>
+          </div>
+          <p style={{ fontSize: 12, color: MUTED, lineHeight: 1.5, margin: 0 }}>{t.aiDisclaimer}</p>
+        </div>
+      </div>
 
       {/* Language picker modal */}
       {showLangPicker && (

@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Conversation } from '@elevenlabs/react';
 import { WaveformLine, buildFlatPoints } from '@/utils/waveform';
-import { getConversationToken, type ConversationTokenResult } from '@/utils/apiClient';
 
 const RED = '#ef4444';
 const CARD = '#141414';
@@ -130,27 +129,11 @@ export default function SimulationScreen({ agentId: agentIdProp, revealMessage: 
     setCallError(null);
     setCallStatus('connecting');
     try {
-      let sessionOptions: Parameters<typeof Conversation.startSession>[0];
-      try {
-        const tokenResult: ConversationTokenResult = await getConversationToken(agentId);
-        if (tokenResult.conversationToken) {
-          // LiveKit JWT → WebRTC (preferred for browsers, default when no connectionType)
-          sessionOptions = { conversationToken: tokenResult.conversationToken };
-        } else if (tokenResult.signedUrl) {
-          // Native wss:// signed URL → WebSocket
-          sessionOptions = { signedUrl: tokenResult.signedUrl, connectionType: 'websocket' };
-        } else {
-          throw new Error('No token returned by server');
-        }
-      } catch (tokenErr) {
-        // Last resort: public agent direct connection (no auth)
-        const msg = tokenErr instanceof Error ? tokenErr.message : String(tokenErr);
-        setCallError(`Token error: ${msg}`);
-        setCallStatus('idle');
-        return;
-      }
+      // Agents are created as public (enable_auth: false), so connect directly
+      // with agentId over WebSocket — same pattern as the mobile app.
       const conv = await Conversation.startSession({
-        ...sessionOptions,
+        agentId,
+        connectionType: 'websocket',
         onStatusChange: ({ status }: { status: string }) => {
           if (status === 'connected') setCallStatus('connected');
           if (status === 'disconnected') { conversationRef.current = null; setCallStatus('idle'); }

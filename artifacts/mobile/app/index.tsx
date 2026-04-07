@@ -157,20 +157,51 @@ export default function HomeScreen() {
   /* ── Scam ticker ─────────────────────────────────────────────── */
   const [scamIdx, setScamIdx] = useState(0);
   const fadeAnim = useRef(new Animated.Value(1)).current;
+  const slideAnim = useRef(new Animated.Value(0)).current;
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+  const isPausedRef = useRef(false);
+  const isAnimatingRef = useRef(false);
+
+  const pauseTicker = useCallback(() => {
+    isPausedRef.current = true;
+    Animated.spring(scaleAnim, { toValue: 1.035, useNativeDriver: true, friction: 7, tension: 130 }).start();
+  }, [scaleAnim]);
+
+  const resumeTicker = useCallback(() => {
+    isPausedRef.current = false;
+    Animated.spring(scaleAnim, { toValue: 1, useNativeDriver: true, friction: 7, tension: 130 }).start();
+  }, [scaleAnim]);
+
+  const advanceScam = useCallback((nextIdx?: number) => {
+    if (isAnimatingRef.current) return;
+    isAnimatingRef.current = true;
+    Animated.parallel([
+      Animated.timing(fadeAnim, { toValue: 0, duration: 480, useNativeDriver: true }),
+      Animated.timing(slideAnim, { toValue: -12, duration: 480, useNativeDriver: true }),
+    ]).start(() => {
+      setScamIdx(prev => nextIdx !== undefined ? nextIdx : (prev + 1) % t.scams.length);
+      slideAnim.setValue(14);
+      Animated.parallel([
+        Animated.timing(fadeAnim, { toValue: 1, duration: 560, useNativeDriver: true }),
+        Animated.timing(slideAnim, { toValue: 0, duration: 560, useNativeDriver: true }),
+      ]).start(() => { isAnimatingRef.current = false; });
+    });
+  }, [fadeAnim, slideAnim, t.scams.length]);
 
   useEffect(() => {
+    isAnimatingRef.current = false;
+    fadeAnim.setValue(1);
+    slideAnim.setValue(0);
     setScamIdx(0);
-  }, [t]);
+  }, [t, fadeAnim, slideAnim]);
 
   useEffect(() => {
     const id = setInterval(() => {
-      Animated.timing(fadeAnim, { toValue: 0, duration: 380, useNativeDriver: true }).start(() => {
-        setScamIdx(i => (i + 1) % t.scams.length);
-        Animated.timing(fadeAnim, { toValue: 1, duration: 420, useNativeDriver: true }).start();
-      });
-    }, 4200);
+      if (isPausedRef.current || isAnimatingRef.current) return;
+      advanceScam();
+    }, 7500);
     return () => clearInterval(id);
-  }, [fadeAnim, t]);
+  }, [advanceScam]);
 
   const scam = t.scams[scamIdx] ?? t.scams[0];
 
@@ -252,31 +283,36 @@ export default function HomeScreen() {
       </Text>
 
       {/* ── Scam Ticker ──────────────────────────────────────────── */}
-      <View style={[styles.tickerCard, { backgroundColor: CARD, borderColor: BORDER }]}>
-        <Animated.View style={{ opacity: fadeAnim }}>
-          <View style={styles.tickerLabelRow}>
-            <View style={styles.tickerDot} />
-            <Text style={styles.tickerLabel}>{scam.label}</Text>
-          </View>
-          <Text style={[styles.tickerDesc, { color: MUTED }]}>
-            {scam.desc}
-          </Text>
-        </Animated.View>
-      </View>
+      <Animated.View
+        style={[
+          styles.tickerCard,
+          { backgroundColor: CARD, borderColor: BORDER, transform: [{ scale: scaleAnim }] },
+        ]}
+      >
+        <Pressable
+          onPressIn={pauseTicker}
+          onPressOut={resumeTicker}
+          {...({ onHoverIn: pauseTicker, onHoverOut: resumeTicker } as any)}
+          style={{ flex: 1 }}
+        >
+          <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}>
+            <View style={styles.tickerLabelRow}>
+              <View style={styles.tickerDot} />
+              <Text style={styles.tickerLabel}>{scam.label}</Text>
+            </View>
+            <Text style={[styles.tickerDesc, { color: MUTED }]}>
+              {scam.desc}
+            </Text>
+          </Animated.View>
+        </Pressable>
+      </Animated.View>
 
       {/* Pagination dots */}
       <View style={styles.dotsRow}>
         {t.scams.map((_, i) => (
           <TouchableOpacity
             key={i}
-            onPress={() => {
-              Animated.sequence([
-                Animated.timing(fadeAnim, { toValue: 0, duration: 200, useNativeDriver: true }),
-              ]).start(() => {
-                setScamIdx(i);
-                Animated.timing(fadeAnim, { toValue: 1, duration: 300, useNativeDriver: true }).start();
-              });
-            }}
+            onPress={() => advanceScam(i)}
             hitSlop={{ top: 8, bottom: 8, left: 4, right: 4 }}
           >
             <View style={[styles.dot, i === scamIdx ? styles.dotActive : { backgroundColor: BORDER }]} />
@@ -475,6 +511,7 @@ const styles = StyleSheet.create({
     minHeight: 78,
     justifyContent: 'center',
     marginBottom: 10,
+    overflow: 'hidden',
   },
   tickerLabelRow: {
     flexDirection: 'row',

@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Audio } from 'expo-av';
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -22,6 +22,19 @@ import { cloneVoice, createAgent, generatePersona, transcribeAudio } from '@/uti
 const MAX_SECONDS = 60;
 const PROMPT_TRIGGER = 30;
 
+const PROCESSING_STEPS = [
+  'Uploading audio sample...',
+  'Transcribing speech to text...',
+  'Analyzing vocal timbre and pitch...',
+  'Isolating linguistic fingerprint...',
+  'Extracting relational context...',
+  'Cloning acoustic model...',
+  'Building deep fake persona...',
+  'Configuring conversational AI agent...',
+  'Finalizing neural bridge...',
+  'Taking longer than expected, holding connection...',
+];
+
 type Phase = 'idle' | 'recording' | 'preview' | 'processing';
 
 export default function OnboardingScreen() {
@@ -36,8 +49,12 @@ export default function OnboardingScreen() {
   const [recordedUri, setRecordedUri] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
 
+  const [stepIndex, setStepIndex] = useState(0);
+  const fadeAnim = useRef(new Animated.Value(1)).current;
+
   const recordingRef = useRef<Audio.Recording | null>(null);
   const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const stepIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const soundRef = useRef<Audio.Sound | null>(null);
   const promptAnim = useRef(new Animated.Value(0)).current;
   const pulseAnim = useRef(new Animated.Value(1)).current;
@@ -49,6 +66,7 @@ export default function OnboardingScreen() {
   useEffect(() => {
     return () => {
       if (countdownRef.current) clearInterval(countdownRef.current);
+      if (stepIntervalRef.current) clearInterval(stepIntervalRef.current);
       if (recordingRef.current) {
         recordingRef.current.stopAndUnloadAsync().catch(() => {});
         recordingRef.current = null;
@@ -59,6 +77,40 @@ export default function OnboardingScreen() {
       }
     };
   }, []);
+
+  const advanceStep = useCallback(() => {
+    Animated.timing(fadeAnim, {
+      toValue: 0,
+      duration: 300,
+      useNativeDriver: true,
+    }).start(() => {
+      setStepIndex((prev) => Math.min(prev + 1, PROCESSING_STEPS.length - 1));
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 400,
+        useNativeDriver: true,
+      }).start();
+    });
+  }, [fadeAnim]);
+
+  useEffect(() => {
+    if (phase !== 'processing') {
+      if (stepIntervalRef.current) {
+        clearInterval(stepIntervalRef.current);
+        stepIntervalRef.current = null;
+      }
+      setStepIndex(0);
+      fadeAnim.setValue(1);
+      return;
+    }
+    stepIntervalRef.current = setInterval(advanceStep, 3000);
+    return () => {
+      if (stepIntervalRef.current) {
+        clearInterval(stepIntervalRef.current);
+        stepIntervalRef.current = null;
+      }
+    };
+  }, [phase, advanceStep, fadeAnim]);
 
   useEffect(() => {
     if (phase === 'preview' && recordedUri) {
@@ -249,6 +301,8 @@ export default function OnboardingScreen() {
   };
 
   if (phase === 'processing') {
+    const isLastStep = stepIndex === PROCESSING_STEPS.length - 1;
+    const stepLabel = isLastStep ? '' : `Step ${stepIndex + 1} of ${PROCESSING_STEPS.length - 1}`;
     return (
       <View
         style={[styles.container, styles.centered, {
@@ -258,10 +312,22 @@ export default function OnboardingScreen() {
         }]}
         testID="processing-view"
       >
-        <ActivityIndicator size="large" color={colors.primary} />
-        <Text style={[styles.processingText, { color: colors.foreground }]}>
-          {t.processingVoice}
-        </Text>
+        <View style={[styles.spinnerRing, { borderColor: colors.primary + '40' }]}>
+          <ActivityIndicator size="large" color={colors.primary} />
+        </View>
+
+        <View style={styles.processingTextBlock}>
+          <Animated.Text
+            style={[styles.processingStatus, { color: colors.foreground, opacity: fadeAnim }]}
+          >
+            {PROCESSING_STEPS[stepIndex]}
+          </Animated.Text>
+          {stepLabel ? (
+            <Text style={[styles.processingStepLabel, { color: colors.mutedForeground }]}>
+              {stepLabel}
+            </Text>
+          ) : null}
+        </View>
       </View>
     );
   }
@@ -454,10 +520,31 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 32,
   },
-  processingText: {
-    fontSize: 20,
+  spinnerRing: {
+    width: 96,
+    height: 96,
+    borderRadius: 48,
+    borderWidth: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  processingTextBlock: {
+    alignItems: 'center',
+    gap: 10,
+    paddingHorizontal: 32,
+  },
+  processingStatus: {
+    fontSize: 18,
     fontFamily: 'Inter_600SemiBold',
     textAlign: 'center',
+    lineHeight: 26,
+  },
+  processingStepLabel: {
+    fontSize: 13,
+    fontFamily: 'Inter_400Regular',
+    textAlign: 'center',
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
   },
   header: {
     flexDirection: 'row',

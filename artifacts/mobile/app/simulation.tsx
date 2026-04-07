@@ -175,6 +175,7 @@ function SimulationContent({
     try {
       const conv = await Conversation.startSession({
         agentId,
+        connectionType: 'websocket',
         onStatusChange: ({ status }: { status: string }) => {
           if (status === 'connected') setCallStatus('connected');
           if (status === 'disconnected') {

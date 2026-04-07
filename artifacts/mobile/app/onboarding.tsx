@@ -259,7 +259,8 @@ export default function OnboardingScreen() {
     const uris = [recordedUri];
     try {
       const transcription = await transcribeAudio(uris);
-      const personaResult = await generatePersona(transcription);
+      const recordingDurationSeconds = MAX_SECONDS - secondsLeft;
+      const personaResult = await generatePersona(transcription, recordingDurationSeconds);
       const persona = (personaResult as { persona?: Record<string, unknown> }).persona ?? personaResult;
 
       const system_prompt =

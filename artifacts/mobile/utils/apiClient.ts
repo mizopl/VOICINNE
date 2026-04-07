@@ -74,14 +74,17 @@ export async function transcribeAudio(localUris: string[]): Promise<string> {
 
 /**
  * POST /api/generate-persona
- * Sends the transcription as JSON.
+ * Sends the transcription and the actual recording duration as JSON.
  * Returns a Gemini-generated persona config object.
  */
-export async function generatePersona(transcription: string): Promise<Record<string, unknown>> {
+export async function generatePersona(
+  transcription: string,
+  recordingDurationSeconds: number
+): Promise<Record<string, unknown>> {
   const response = await fetch(`${API_BASE}/api/generate-persona`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ transcription }),
+    body: JSON.stringify({ transcription, recordingDurationSeconds }),
   });
 
   if (!response.ok) {

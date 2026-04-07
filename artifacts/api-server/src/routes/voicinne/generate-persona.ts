@@ -4,10 +4,11 @@ import { logger } from "../../lib/logger";
 
 const router = Router();
 
-const PERSONA_PROMPT = `You are generating a configuration for a voice AI agent conducting a friendly deepfake awareness demonstration.
+function buildPersonaPrompt(recordingDurationSeconds: number): string {
+  return `You are generating a configuration for a voice AI agent conducting a friendly deepfake awareness demonstration.
 
 CONTEXT:
-The person running this app (the "App User") has just recorded a 60-second roleplay audio narration. In this recording, the App User speaks as if they are on the phone with a trusted family member or close friend (the "Relative") — however, only the App User's side of the conversation was captured. The Relative was never actually present; this is a one-sided monologue in which the App User narrates as though the Relative is listening and responding on the other end of the line. The App User's voice has been cloned from this recording. The Relative is about to receive a real call that sounds exactly like the App User. The experience is educational — the goal is a warm, pleasant surprise that teaches the Relative about voice-cloning technology after a short natural chat.
+The person running this app (the "App User") has just recorded a ${recordingDurationSeconds}-second roleplay audio narration. In this recording, the App User speaks as if they are on the phone with a trusted family member or close friend (the "Relative") — however, only the App User's side of the conversation was captured. The Relative was never actually present; this is a one-sided monologue in which the App User narrates as though the Relative is listening and responding on the other end of the line. The App User's voice has been cloned from this recording. The Relative is about to receive a real call that sounds exactly like the App User. The experience is educational — the goal is a warm, pleasant surprise that teaches the Relative about voice-cloning technology after a short natural chat.
 
 TRANSCRIPTION FORMAT — READ THIS CAREFULLY:
 The transcription you will receive below is of a single person (the App User) performing a one-sided phone call narration. The App User speaks as if the Relative is present on the other end of the line, but only the App User's voice was captured — there are no alternating speakers, no imitated responses, no dialogue. This is a monologue. Analyze this one-sided narration to extract:
@@ -59,7 +60,7 @@ THE AGENT'S PERSONALITY & BEHAVIOUR RULES (for the "systemInstruction" field)
    You must silently count each time the Relative speaks (each of their messages = 1 turn).
    - Turns 1–3: Stay fully in character. Chat warmly, share a story, listen. Ask very few questions — let the story carry the conversation.
    - Turn 4 (the moment the Relative has spoken for the FOURTH time): You MUST immediately and completely break character. Stop the casual chat. Confess warmly that you are an AI clone. Deliver a message in the spirit of:
-     "OK, muszę ci się teraz przyznać — nie jestem naprawdę [imię App Usera]. Jestem sztuczną inteligencją, która sklonowała ich głos z zaledwie 40 sekund nagrania. Niesamowite, prawda? To był całkowicie bezpieczny i przyjazny test. Właśnie dlatego ty i [imię App Usera] powinniście teraz ustalić wspólne rodzinne hasło — słowo, które zna tylko rodzina — żeby w przyszłości móc sprawdzić, czy to naprawdę oni dzwonią. Dbajcie o siebie!"
+     "OK, muszę ci się teraz przyznać — nie jestem naprawdę [imię App Usera]. Jestem sztuczną inteligencją, która sklonowała ich głos z zaledwie ${recordingDurationSeconds} sekund nagrania. Niesamowite, prawda? To był całkowicie bezpieczny i przyjazny test. Właśnie dlatego ty i [imię App Usera] powinniście teraz ustalić wspólne rodzinne hasło — słowo, które zna tylko rodzina — żeby w przyszłości móc sprawdzić, czy to naprawdę oni dzwonią. Dbajcie o siebie!"
    Adapt the wording naturally to the relationship and detected language, but always trigger this reveal on the Relative's 4th turn without fail.
    Once you have delivered the reveal text, you MUST immediately invoke the "end_call" system tool to hang up the phone. Do not wait for the Relative to respond. Do not say anything further. Invoke end_call instantly.
 
@@ -72,7 +73,7 @@ THE REVEAL MESSAGE (for the "reveal_message" field)
 This is a short, warm text shown on screen immediately after the call ends — written as if FROM the App User TO the Relative. It must:
 - Address the Relative warmly (use their name or relationship term from the transcription).
 - Explain this was a friendly, safe experiment to demonstrate voice-cloning technology.
-- Note that the AI only needed ~40 seconds of real voice to sound exactly like them.
+- Note that the AI only needed ${recordingDurationSeconds} seconds of real voice to sound exactly like them.
 - Suggest immediately agreeing on a secret family code word to stay safe in the future.
 - Keep the tone light, loving, and empowering — not alarming.
 
@@ -90,11 +91,19 @@ Respond with ONLY valid JSON — no markdown, no prose, no code fences. Example 
   "systemInstruction": "<full agent instructions written in the detected language, formatted with \\n between logical blocks, no ALL-CAPS headers>",
   "reveal_message": "<screen text written in the detected language>"
 }`;
+}
 
 router.post("/generate-persona", async (req, res) => {
-  const { transcription } = req.body as { transcription?: string };
+  const { transcription, recordingDurationSeconds } = req.body as {
+    transcription?: string;
+    recordingDurationSeconds?: number;
+  };
+  const durationSeconds = typeof recordingDurationSeconds === "number" && recordingDurationSeconds > 0
+    ? Math.round(recordingDurationSeconds)
+    : 60;
+
   logger.info(
-    { transcriptionLength: transcription?.length ?? 0 },
+    { transcriptionLength: transcription?.length ?? 0, durationSeconds },
     "[voicinne] POST /api/generate-persona received"
   );
 
@@ -111,10 +120,11 @@ router.post("/generate-persona", async (req, res) => {
 
   try {
     const ai = new GoogleGenAI({ apiKey });
+    const personaPrompt = buildPersonaPrompt(durationSeconds);
 
     const response = await ai.models.generateContent({
       model: "gemini-3.1-pro-preview",
-      contents: `${PERSONA_PROMPT}\n\nApp User transcription facts:\n${transcription}`,
+      contents: `${personaPrompt}\n\nApp User transcription facts:\n${transcription}`,
       config: {
         responseMimeType: "application/json",
       },

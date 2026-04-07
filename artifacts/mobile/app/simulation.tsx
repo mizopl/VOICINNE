@@ -23,15 +23,19 @@ import {
 
 const DURATION_SECONDS = 3 * 60;
 
+const TEST_AGENT_ID = 'agent_9801knkb7cbtfpk8pvfe3stexj99';
+
 export default function SimulationScreen() {
   const { agentId, revealMessage } = useLocalSearchParams<{
     agentId: string;
     revealMessage: string;
   }>();
 
+  const resolvedAgentId = agentId?.trim() || TEST_AGENT_ID;
+
   return (
     <ConversationProvider>
-      <SimulationContent agentId={agentId ?? ''} revealMessageParam={revealMessage ?? ''} />
+      <SimulationContent agentId={resolvedAgentId} revealMessageParam={revealMessage ?? ''} />
     </ConversationProvider>
   );
 }

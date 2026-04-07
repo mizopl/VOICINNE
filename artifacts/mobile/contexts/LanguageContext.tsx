@@ -31,7 +31,10 @@ export interface Translations {
   simulationInfo: string;
   revealButton: string;
   revealTitle: string;
+  revealStat: string;
+  revealStatCaption: string;
   revealMessage: string;
+  revealRisksTitle: string;
   timeRemaining: string;
   safeWordPrompt: string;
   backToHome: string;
@@ -71,11 +74,14 @@ const TRANSLATIONS: Record<Language, Translations> = {
     simulationSubtitle: 'The AI is mimicking you.',
     simulationInfo: 'The AI agent is currently mimicking your voice to speak with a loved one.',
     revealButton: 'Reveal Experiment',
-    revealTitle: 'Deep Fake Revealed',
+    revealTitle: "You've Just Been Deepfaked.",
+    revealStat: '15 seconds',
+    revealStatCaption: "That's all modern AI needs to clone anyone's voice — including yours.",
     revealMessage:
-      'This was a psychological experiment about deep fake technology. The voice you heard was an AI clone trained on your answers. This technology can be used to deceive people — even those closest to you.\n\nEstablish a safety word with your loved ones today.',
+      "The voice you just heard was generated in real-time by an AI that cloned a voice from just 60 seconds of audio. It was designed to sound exactly like someone you trust.\n\nThis technology is already used by criminals to impersonate family members, executives, and officials — tricking people into transferring money, sharing passwords, or revealing personal information.",
+    revealRisksTitle: 'Voice is just the beginning.',
     timeRemaining: 'Time Remaining',
-    safeWordPrompt: 'Establish a safety word with your loved ones.',
+    safeWordPrompt: 'Agree on a secret code word with your family. Only you will know it — use it to instantly verify a caller is really them.',
     backToHome: 'Back to Home',
     aiDisclaimer:
       'Educational Purpose Only: This app uses advanced Voice AI to teach cybersecurity. Voice recordings are stored securely for educational and security audit purposes.',
@@ -112,11 +118,14 @@ const TRANSLATIONS: Record<Language, Translations> = {
     simulationSubtitle: 'AI naśladuje Ciebie.',
     simulationInfo: 'Agent AI naśladuje Twój głos, aby rozmawiać z bliską osobą.',
     revealButton: 'Ujawnij Eksperyment',
-    revealTitle: 'Deep Fake Ujawniony',
+    revealTitle: 'Właśnie Padłeś Ofiarą Deepfake\'a.',
+    revealStat: '15 sekund',
+    revealStatCaption: 'Tyle wystarczy nowoczesnej AI, aby sklonować czyjkolwiek głos — włącznie z Twoim.',
     revealMessage:
-      'To był eksperyment psychologiczny dotyczący technologii deep fake. Głos, który słyszałeś, był klonem AI wytrenowanym na Twoich odpowiedziach. Technologia ta może być używana do oszukiwania ludzi — nawet tych najbliższych.\n\nUstaw z bliskimi hasło bezpieczeństwa już dziś.',
+      'Głos, który właśnie usłyszałeś, był wygenerowany w czasie rzeczywistym przez sztuczną inteligencję, która sklonowała go z zaledwie 60 sekund nagrania. Zaprojektowano go tak, by brzmiał dokładnie jak ktoś, komu ufasz.\n\nTa technologia jest już wykorzystywana przez przestępców do podszywania się pod członków rodziny, szefów i urzędników — nakłaniając ludzi do przelewania pieniędzy, podawania haseł lub ujawniania danych osobowych.',
+    revealRisksTitle: 'Głos to tylko początek.',
     timeRemaining: 'Pozostały Czas',
-    safeWordPrompt: 'Ustaw hasło bezpieczeństwa z bliskimi.',
+    safeWordPrompt: 'Ustalcie z rodziną tajne hasło bezpieczeństwa. Tylko wy je znacie — używajcie go, żeby natychmiast sprawdzić, czy dzwoniący to naprawdę ta osoba.',
     backToHome: 'Powrót do Domu',
     aiDisclaimer:
       'Tylko do celów edukacyjnych: Ta aplikacja używa zaawansowanej sztucznej inteligencji do nauczania cyberbezpieczeństwa. Nagrania głosowe są bezpiecznie przechowywane w celach edukacyjnych i audytu bezpieczeństwa.',
@@ -153,11 +162,14 @@ const TRANSLATIONS: Record<Language, Translations> = {
     simulationSubtitle: 'La IA te está imitando.',
     simulationInfo: 'El agente de IA está imitando tu voz para hablar con un ser querido.',
     revealButton: 'Revelar Experimento',
-    revealTitle: 'Deep Fake Revelado',
+    revealTitle: 'Acabas de Sufrir un Deepfake.',
+    revealStat: '15 segundos',
+    revealStatCaption: 'Eso es todo lo que necesita la IA moderna para clonar la voz de cualquier persona, incluida la tuya.',
     revealMessage:
-      'Este fue un experimento psicológico sobre la tecnología deep fake. La voz que escuchaste era un clon de IA entrenado con tus respuestas. Esta tecnología puede usarse para engañar personas — incluso a tus seres queridos.\n\nEstablece una palabra de seguridad con tus seres queridos hoy.',
+      'La voz que acabas de escuchar fue generada en tiempo real por una IA que clonó una voz a partir de solo 60 segundos de audio. Fue diseñada para sonar exactamente como alguien de tu confianza.\n\nEsta tecnología ya es utilizada por delincuentes para hacerse pasar por familiares, directivos y funcionarios, engañando a las personas para que transfieran dinero, compartan contraseñas o revelen información personal.',
+    revealRisksTitle: 'La voz es solo el comienzo.',
     timeRemaining: 'Tiempo Restante',
-    safeWordPrompt: 'Establece una palabra de seguridad con tus seres queridos.',
+    safeWordPrompt: 'Acuerda con tu familia una palabra clave secreta. Solo vosotros la sabréis — usadla para verificar al instante que quien llama es realmente quien dice ser.',
     backToHome: 'Volver al Inicio',
     aiDisclaimer:
       'Solo para fines educativos: Esta aplicación usa IA de voz avanzada para enseñar ciberseguridad. Las grabaciones de voz se almacenan de forma segura con fines educativos y de auditoría de seguridad.',
@@ -194,11 +206,14 @@ const TRANSLATIONS: Record<Language, Translations> = {
     simulationSubtitle: 'Die KI imitiert dich.',
     simulationInfo: 'Der KI-Agent imitiert deine Stimme, um mit einem Angehörigen zu sprechen.',
     revealButton: 'Experiment Enthüllen',
-    revealTitle: 'Deep Fake Enthüllt',
+    revealTitle: 'Du Wurdest Soeben Deepgefaked.',
+    revealStat: '15 Sekunden',
+    revealStatCaption: 'Das ist alles, was moderne KI braucht, um die Stimme einer beliebigen Person zu klonen — einschließlich deiner.',
     revealMessage:
-      'Dies war ein psychologisches Experiment über Deep-Fake-Technologie. Die Stimme war ein KI-Klon, der mit deinen Antworten trainiert wurde. Diese Technologie kann verwendet werden, um Menschen zu täuschen — sogar deine Liebsten.\n\nVereinbare noch heute ein Sicherheitswort mit deinen Angehörigen.',
+      'Die Stimme, die du gerade gehört hast, wurde in Echtzeit von einer KI erzeugt, die eine Stimme aus nur 60 Sekunden Audio geklont hat. Sie wurde so gestaltet, dass sie genau wie jemand klingt, dem du vertraust.\n\nDiese Technologie wird bereits von Kriminellen eingesetzt, um Familienmitglieder, Führungskräfte und Beamte zu imitieren — und Menschen dazu zu bringen, Geld zu überweisen, Passwörter preiszugeben oder persönliche Daten zu enthüllen.',
+    revealRisksTitle: 'Die Stimme ist erst der Anfang.',
     timeRemaining: 'Verbleibende Zeit',
-    safeWordPrompt: 'Vereinbare ein Sicherheitswort mit deinen Angehörigen.',
+    safeWordPrompt: 'Vereinbare mit deiner Familie ein geheimes Codewort. Nur ihr kennt es — nutzt es, um sofort zu prüfen, ob ein Anrufer wirklich derjenige ist, der er zu sein behauptet.',
     backToHome: 'Zurück zur Startseite',
     aiDisclaimer:
       'Nur zu Bildungszwecken: Diese App verwendet fortschrittliche KI-Sprachtechnologie, um Cybersicherheit zu vermitteln. Sprachaufnahmen werden sicher für Bildungs- und Sicherheitsauditzwecke gespeichert.',
@@ -235,11 +250,14 @@ const TRANSLATIONS: Record<Language, Translations> = {
     simulationSubtitle: 'L\'IA vous imite.',
     simulationInfo: 'L\'agent IA imite votre voix pour parler avec un proche.',
     revealButton: 'Révéler l\'Expérience',
-    revealTitle: 'Deep Fake Révélé',
+    revealTitle: 'Vous Venez d\'Être Victime d\'un Deepfake.',
+    revealStat: '15 secondes',
+    revealStatCaption: 'C\'est tout ce dont l\'IA moderne a besoin pour cloner la voix de n\'importe qui — y compris la vôtre.',
     revealMessage:
-      'C\'était une expérience psychologique sur la technologie deep fake. La voix que vous avez entendue était un clone IA formé sur vos réponses. Cette technologie peut être utilisée pour tromper des personnes — même celles qui vous sont les plus proches.\n\nÉtablissez un mot de sécurité avec vos proches dès aujourd\'hui.',
+      'La voix que vous venez d\'entendre a été générée en temps réel par une IA qui a cloné une voix à partir de seulement 60 secondes d\'audio. Elle a été conçue pour sonner exactement comme quelqu\'un en qui vous avez confiance.\n\nCette technologie est déjà utilisée par des criminels pour se faire passer pour des membres de la famille, des dirigeants et des fonctionnaires — trompant les gens pour qu\'ils transfèrent de l\'argent, partagent des mots de passe ou révèlent des informations personnelles.',
+    revealRisksTitle: 'La voix n\'est que le début.',
     timeRemaining: 'Temps Restant',
-    safeWordPrompt: 'Établissez un mot de sécurité avec vos proches.',
+    safeWordPrompt: 'Convenez avec votre famille d\'un mot de code secret. Vous seuls le connaîtrez — utilisez-le pour vérifier immédiatement qu\'un appelant est vraiment qui il prétend être.',
     backToHome: 'Retour à l\'Accueil',
     aiDisclaimer:
       'À des fins éducatives uniquement : Cette application utilise une IA vocale avancée pour enseigner la cybersécurité. Les enregistrements vocaux sont stockés en toute sécurité à des fins éducatives et d\'audit de sécurité.',
@@ -276,11 +294,14 @@ const TRANSLATIONS: Record<Language, Translations> = {
     simulationSubtitle: 'L\'IA ti sta imitando.',
     simulationInfo: 'L\'agente IA sta imitando la tua voce per parlare con un caro.',
     revealButton: 'Rivela Esperimento',
-    revealTitle: 'Deep Fake Rivelato',
+    revealTitle: 'Sei Appena Stato Vittima di un Deepfake.',
+    revealStat: '15 secondi',
+    revealStatCaption: 'È tutto ciò di cui l\'IA moderna ha bisogno per clonare la voce di chiunque — inclusa la tua.',
     revealMessage:
-      'Questo è stato un esperimento psicologico sulla tecnologia deep fake. La voce che hai sentito era un clone IA addestrato sulle tue risposte. Questa tecnologia può essere usata per ingannare le persone — anche quelle più vicine a te.\n\nStabilisci una parola di sicurezza con i tuoi cari oggi.',
+      'La voce che hai appena sentito è stata generata in tempo reale da un\'IA che ha clonato una voce da soli 60 secondi di audio. È stata progettata per suonare esattamente come qualcuno di cui ti fidi.\n\nQuesta tecnologia è già utilizzata dai criminali per impersonare familiari, dirigenti e funzionari — inducendo le persone a trasferire denaro, condividere password o rivelare informazioni personali.',
+    revealRisksTitle: 'La voce è solo l\'inizio.',
     timeRemaining: 'Tempo Rimanente',
-    safeWordPrompt: 'Stabilisci una parola di sicurezza con i tuoi cari.',
+    safeWordPrompt: 'Concordate con la vostra famiglia una parola d\'ordine segreta. Solo voi la conoscerete — usatela per verificare immediatamente che chi chiama sia davvero chi dice di essere.',
     backToHome: 'Torna alla Home',
     aiDisclaimer:
       'Solo a scopo educativo: Questa app utilizza un\'IA vocale avanzata per insegnare la cybersicurezza. Le registrazioni vocali vengono archiviate in modo sicuro per scopi educativi e di audit della sicurezza.',

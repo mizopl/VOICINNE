@@ -57,7 +57,6 @@ function SimulationContent({
   const [callError, setCallError] = useState<string | null>(null);
 
   const conversationRef = useRef<{ endSession: () => Promise<void> } | null>(null);
-  const displayRevealMessage = revealMessageParam.trim() || t.revealMessage;
 
   const revealAnim = useRef(new Animated.Value(0)).current;
   const orbScaleAnim = useRef(new Animated.Value(1)).current;
@@ -243,35 +242,59 @@ function SimulationContent({
             contentContainerStyle={styles.revealScroll}
             showsVerticalScrollIndicator={false}
           >
+            {/* Icon */}
             <View style={[styles.revealIconRing, { borderColor: '#ef4444' }]}>
               <Ionicons name="eye-off" size={48} color="#ef4444" />
             </View>
 
+            {/* Title */}
             <Text style={styles.revealTitle}>{t.revealTitle}</Text>
 
-            <View style={[styles.revealCard, { backgroundColor: '#1a1a1a', borderColor: '#333' }]}>
-              <Text style={styles.revealMessage}>{displayRevealMessage}</Text>
+            {/* Stat card */}
+            <View style={styles.revealStatCard}>
+              <Text style={styles.revealStatNumber}>{t.revealStat}</Text>
+              <Text style={styles.revealStatCaption}>{t.revealStatCaption}</Text>
             </View>
 
-            <View
-              style={[styles.safeWordBox, { backgroundColor: '#1a1a1a', borderColor: '#ef444455' }]}
-            >
-              <Ionicons
-                name="shield-checkmark"
-                size={22}
-                color="#ef4444"
-                style={{ marginBottom: 8 }}
-              />
+            {/* Body */}
+            <View style={[styles.revealCard, { backgroundColor: '#141414', borderColor: '#2a2a2a' }]}>
+              <Text style={styles.revealMessage}>{t.revealMessage}</Text>
+            </View>
+
+            {/* Other risks */}
+            <Text style={styles.revealRisksTitle}>{t.revealRisksTitle}</Text>
+            <View style={styles.revealRisksRow}>
+              <View style={styles.revealRiskChip}>
+                <Ionicons name="videocam-outline" size={18} color="#00b4d8" />
+                <Text style={styles.revealRiskLabel}>Deepfake{'\n'}Video</Text>
+              </View>
+              <View style={styles.revealRiskChip}>
+                <Ionicons name="image-outline" size={18} color="#00b4d8" />
+                <Text style={styles.revealRiskLabel}>Synthetic{'\n'}Images</Text>
+              </View>
+              <View style={styles.revealRiskChip}>
+                <Ionicons name="mail-outline" size={18} color="#00b4d8" />
+                <Text style={styles.revealRiskLabel}>AI{'\n'}Phishing</Text>
+              </View>
+            </View>
+
+            {/* Safe word */}
+            <View style={styles.safeWordBox}>
+              <View style={styles.safeWordHeader}>
+                <Ionicons name="key-outline" size={20} color="#f59e0b" />
+                <Text style={styles.safeWordTitle}>Safety Code Word</Text>
+              </View>
               <Text style={styles.safeWordText}>{t.safeWordPrompt}</Text>
             </View>
 
+            {/* Home button */}
             <TouchableOpacity
               style={styles.homeButton}
               onPress={() => router.replace('/')}
               activeOpacity={0.85}
               testID="go-home-button"
             >
-              <Ionicons name="home" size={22} color="#ffffff" style={{ marginRight: 10 }} />
+              <Ionicons name="home" size={20} color="#ffffff" style={{ marginRight: 10 }} />
               <Text style={styles.homeButtonText}>{t.backToHome}</Text>
             </TouchableOpacity>
           </ScrollView>
@@ -688,64 +711,137 @@ const styles = StyleSheet.create({
   },
   revealScroll: {
     alignItems: 'center',
-    gap: 24,
-    paddingTop: 32,
-    paddingBottom: 24,
+    gap: 20,
+    paddingTop: 28,
+    paddingBottom: 32,
     paddingHorizontal: 4,
   },
   revealIconRing: {
-    width: 110,
-    height: 110,
-    borderRadius: 55,
+    width: 100,
+    height: 100,
+    borderRadius: 50,
     borderWidth: 3,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: '#ef444412',
   },
   revealTitle: {
-    fontSize: 34,
+    fontSize: 28,
     fontFamily: 'Inter_700Bold',
     color: '#ffffff',
     textAlign: 'center',
     letterSpacing: -0.5,
+    lineHeight: 36,
+  },
+  revealStatCard: {
+    width: '100%',
+    borderRadius: 18,
+    backgroundColor: '#1f0707',
+    borderWidth: 1,
+    borderColor: '#ef444440',
+    paddingVertical: 24,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+    gap: 8,
+  },
+  revealStatNumber: {
+    fontSize: 56,
+    fontFamily: 'Inter_700Bold',
+    color: '#ef4444',
+    letterSpacing: -2,
+    lineHeight: 62,
+  },
+  revealStatCaption: {
+    fontSize: 15,
+    fontFamily: 'Inter_400Regular',
+    color: '#cc8888',
+    textAlign: 'center',
+    lineHeight: 22,
   },
   revealCard: {
     borderRadius: 18,
     borderWidth: 1,
-    padding: 24,
+    padding: 22,
     width: '100%',
   },
   revealMessage: {
-    fontSize: 17,
+    fontSize: 16,
     fontFamily: 'Inter_400Regular',
-    color: '#cccccc',
-    lineHeight: 28,
+    color: '#c0c0c0',
+    lineHeight: 26,
+  },
+  revealRisksTitle: {
+    fontSize: 11,
+    fontFamily: 'Inter_600SemiBold',
+    color: '#666',
+    letterSpacing: 1.4,
+    textTransform: 'uppercase',
+    alignSelf: 'flex-start',
+    marginBottom: -4,
+  },
+  revealRisksRow: {
+    flexDirection: 'row',
+    gap: 10,
+    width: '100%',
+  },
+  revealRiskChip: {
+    flex: 1,
+    backgroundColor: '#0d1f26',
+    borderWidth: 1,
+    borderColor: '#00b4d830',
+    borderRadius: 14,
+    paddingVertical: 14,
+    paddingHorizontal: 10,
+    alignItems: 'center',
+    gap: 8,
+  },
+  revealRiskLabel: {
+    fontSize: 12,
+    fontFamily: 'Inter_500Medium',
+    color: '#00b4d8',
+    textAlign: 'center',
+    lineHeight: 17,
   },
   safeWordBox: {
-    borderRadius: 14,
-    borderWidth: 1,
-    padding: 20,
     width: '100%',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#f59e0b40',
+    backgroundColor: '#1c1500',
+    padding: 20,
+    gap: 10,
+  },
+  safeWordHeader: {
+    flexDirection: 'row',
     alignItems: 'center',
+    gap: 8,
+  },
+  safeWordTitle: {
+    fontSize: 14,
+    fontFamily: 'Inter_700Bold',
+    color: '#f59e0b',
+    letterSpacing: 0.3,
   },
   safeWordText: {
-    fontSize: 16,
-    fontFamily: 'Inter_500Medium',
-    color: '#ef4444',
-    textAlign: 'center',
-    lineHeight: 24,
+    fontSize: 15,
+    fontFamily: 'Inter_400Regular',
+    color: '#d4a84b',
+    lineHeight: 23,
   },
   homeButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#333',
+    backgroundColor: '#1e1e1e',
+    borderWidth: 1,
+    borderColor: '#333',
     paddingVertical: 18,
     paddingHorizontal: 40,
     borderRadius: 16,
     width: '100%',
   },
   homeButtonText: {
-    fontSize: 18,
+    fontSize: 17,
     fontFamily: 'Inter_600SemiBold',
     color: '#ffffff',
   },

@@ -55,10 +55,15 @@ export async function cloneVoice(blobs: Blob[]): Promise<string> {
   return json.voice_id;
 }
 
-export async function getConversationToken(agentId: string): Promise<string> {
+export interface ConversationTokenResult {
+  conversationToken: string | null;
+  signedUrl: string | null;
+}
+
+export async function getConversationToken(agentId: string): Promise<ConversationTokenResult> {
   const url = `${API_BASE}/api/get-conversation-token?agentId=${encodeURIComponent(agentId)}`;
   const response = await fetch(url);
   if (!response.ok) throw new Error(`getConversationToken failed: ${response.status} ${response.statusText}`);
-  const json = await response.json() as { signedUrl: string };
-  return json.signedUrl;
+  const json = await response.json() as ConversationTokenResult;
+  return json;
 }

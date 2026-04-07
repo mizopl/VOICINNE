@@ -27,22 +27,28 @@ router.get("/get-conversation-token", async (req, res) => {
       }
     );
 
-    // ElevenLabs returns either { token } (JWT) or { signed_url } (wss:// URL).
-    // Prefer the full signed_url; fall back to constructing one from the JWT.
-    const signedUrl =
-      response.data.signed_url ??
-      (response.data.token
-        ? `wss://api.elevenlabs.io/v1/convai/conversation?jwt=${response.data.token}`
-        : null);
+    const { token, signed_url } = response.data;
 
-    if (!signedUrl) {
+    logger.info(
+      { agentId, hasToken: !!token, hasSignedUrl: !!signed_url },
+      "[voicinne] ElevenLabs token endpoint response"
+    );
+
+    if (!token && !signed_url) {
       logger.error({ agentId }, "[voicinne] no signed_url or token in ElevenLabs response");
-      res.status(502).json({ error: "No conversation URL returned by ElevenLabs" });
+      res.status(502).json({ error: "No conversation token returned by ElevenLabs" });
       return;
     }
 
     logger.info({ agentId }, "[voicinne] conversation token issued");
-    res.json({ signedUrl });
+
+    // Return both forms so the client can choose the right connection type:
+    // - conversationToken: LiveKit JWT → use with WebRTC (preferred for browsers)
+    // - signedUrl: wss:// URL → use with WebSocket (fallback if only signed_url returned)
+    res.json({
+      conversationToken: token ?? null,
+      signedUrl: signed_url ?? null,
+    });
   } catch (err) {
     logger.error({ err, agentId }, "[voicinne] get-conversation-token failed");
     const message = err instanceof Error ? err.message : String(err);

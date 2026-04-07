@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Conversation } from '@elevenlabs/react';
 import { WaveformLine, buildFlatPoints } from '@/utils/waveform';
-import { getConversationToken } from '@/utils/apiClient';
+import { getConversationToken, type ConversationTokenResult } from '@/utils/apiClient';
 
 const RED = '#ef4444';
 const CARD = '#141414';
@@ -132,10 +132,22 @@ export default function SimulationScreen({ agentId: agentIdProp, revealMessage: 
     try {
       let sessionOptions: Parameters<typeof Conversation.startSession>[0];
       try {
-        const signedUrl = await getConversationToken(agentId);
-        sessionOptions = { signedUrl, connectionType: 'websocket' };
-      } catch {
-        sessionOptions = { agentId, connectionType: 'websocket' };
+        const tokenResult: ConversationTokenResult = await getConversationToken(agentId);
+        if (tokenResult.conversationToken) {
+          // LiveKit JWT → WebRTC (preferred for browsers, default when no connectionType)
+          sessionOptions = { conversationToken: tokenResult.conversationToken };
+        } else if (tokenResult.signedUrl) {
+          // Native wss:// signed URL → WebSocket
+          sessionOptions = { signedUrl: tokenResult.signedUrl, connectionType: 'websocket' };
+        } else {
+          throw new Error('No token returned by server');
+        }
+      } catch (tokenErr) {
+        // Last resort: public agent direct connection (no auth)
+        const msg = tokenErr instanceof Error ? tokenErr.message : String(tokenErr);
+        setCallError(`Token error: ${msg}`);
+        setCallStatus('idle');
+        return;
       }
       const conv = await Conversation.startSession({
         ...sessionOptions,

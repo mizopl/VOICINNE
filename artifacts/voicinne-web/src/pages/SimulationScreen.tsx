@@ -215,15 +215,9 @@ export default function SimulationScreen({ agentId: agentIdProp, revealMessage: 
           </div>
 
           {/* Body */}
-          {revealMessageProp ? (
-            <div style={{ borderRadius: 18, border: `1px solid #2a2a2a`, padding: 22, width: '100%', background: '#141414', boxSizing: 'border-box' }}>
-              <p style={{ fontSize: 16, color: '#c0c0c0', lineHeight: 1.625, margin: 0 }}>{revealMessageProp}</p>
-            </div>
-          ) : (
-            <div style={{ borderRadius: 18, border: `1px solid #2a2a2a`, padding: 22, width: '100%', background: '#141414', boxSizing: 'border-box' }}>
-              <p style={{ fontSize: 16, color: '#c0c0c0', lineHeight: 1.625, margin: 0 }}>{t.revealMessage}</p>
-            </div>
-          )}
+          <div style={{ borderRadius: 18, border: `1px solid #2a2a2a`, padding: 22, width: '100%', background: '#141414', boxSizing: 'border-box' }}>
+            <p style={{ fontSize: 16, color: '#c0c0c0', lineHeight: 1.625, margin: 0, whiteSpace: 'pre-line' }}>{t.revealMessage}</p>
+          </div>
 
           {/* Risks */}
           <p style={{ fontSize: 11, fontWeight: 600, color: '#666', letterSpacing: 1.4, textTransform: 'uppercase', alignSelf: 'flex-start', margin: 0 }}>{t.revealRisksTitle}</p>

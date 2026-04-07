@@ -6,6 +6,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
 import {
   Animated,
+  Dimensions,
   Platform,
   ScrollView,
   StyleSheet,
@@ -19,9 +20,13 @@ import { Conversation } from '@elevenlabs/react';
 
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useColors } from '@/hooks/useColors';
+import { WaveformLine, buildFlatPoints } from '@/utils/waveform';
 
+const RED = '#ef4444';
 const DURATION_SECONDS = 3 * 60;
 const TEST_AGENT_ID = 'agent_9801knkb7cbtfpk8pvfe3stexj99';
+const W = Dimensions.get('window').width;
+const WAVE_H = 48;
 
 type CallStatus = 'idle' | 'connecting' | 'connected' | 'ending';
 type CallMode = 'listening' | 'speaking';
@@ -63,10 +68,11 @@ function SimulationContent({
   const ring1Anim = useRef(new Animated.Value(0.6)).current;
   const ring2Anim = useRef(new Animated.Value(0.3)).current;
 
+  const flatWavePoints = buildFlatPoints(W - 48, WAVE_H);
+
   const topPad = Platform.OS === 'web' ? 67 : insets.top;
   const bottomPad = Platform.OS === 'web' ? 34 : insets.bottom;
 
-  const PRIMARY = colors.primary;
   const isActive = callStatus === 'connected' || callStatus === 'connecting';
   const isSpeaking = callStatus === 'connected' && callMode === 'speaking';
 
@@ -243,12 +249,17 @@ function SimulationContent({
             showsVerticalScrollIndicator={false}
           >
             {/* Icon */}
-            <View style={[styles.revealIconRing, { borderColor: '#ef4444' }]}>
-              <Ionicons name="eye-off" size={48} color="#ef4444" />
+            <View style={[styles.revealIconRing, { borderColor: RED }]}>
+              <Ionicons name="eye-off" size={48} color={RED} />
             </View>
 
             {/* Title */}
             <Text style={styles.revealTitle}>{t.revealTitle}</Text>
+
+            {/* Flat waveform separator */}
+            <View style={styles.revealWaveContainer}>
+              <WaveformLine points={flatWavePoints} color={RED + '60'} width={W - 48} height={WAVE_H} strokeWidth={1.5} />
+            </View>
 
             {/* Stat card */}
             <View style={styles.revealStatCard}>
@@ -265,15 +276,15 @@ function SimulationContent({
             <Text style={styles.revealRisksTitle}>{t.revealRisksTitle}</Text>
             <View style={styles.revealRisksRow}>
               <View style={styles.revealRiskChip}>
-                <Ionicons name="videocam-outline" size={18} color="#00b4d8" />
+                <Ionicons name="videocam-outline" size={18} color={RED} />
                 <Text style={styles.revealRiskLabel}>Deepfake{'\n'}Video</Text>
               </View>
               <View style={styles.revealRiskChip}>
-                <Ionicons name="image-outline" size={18} color="#00b4d8" />
+                <Ionicons name="image-outline" size={18} color={RED} />
                 <Text style={styles.revealRiskLabel}>Synthetic{'\n'}Images</Text>
               </View>
               <View style={styles.revealRiskChip}>
-                <Ionicons name="mail-outline" size={18} color="#00b4d8" />
+                <Ionicons name="mail-outline" size={18} color={RED} />
                 <Text style={styles.revealRiskLabel}>AI{'\n'}Phishing</Text>
               </View>
             </View>
@@ -343,7 +354,7 @@ function SimulationContent({
       <View style={styles.centerSection}>
         {/* Caller name chip */}
         <View style={[styles.callerChip, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <View style={[styles.callerDot, { backgroundColor: isActive ? PRIMARY : '#555' }]} />
+          <View style={[styles.callerDot, { backgroundColor: isActive ? RED : '#555' }]} />
           <Text style={[styles.callerName, { color: colors.foreground }]}>Voicinne Agent</Text>
         </View>
 
@@ -358,7 +369,7 @@ function SimulationContent({
                   width: 210,
                   height: 210,
                   borderRadius: 105,
-                  borderColor: PRIMARY,
+                  borderColor: RED,
                   opacity: ring1Anim,
                 },
               ]}
@@ -373,7 +384,7 @@ function SimulationContent({
                   width: 175,
                   height: 175,
                   borderRadius: 88,
-                  borderColor: PRIMARY,
+                  borderColor: RED,
                   opacity: ring2Anim,
                 },
               ]}
@@ -385,8 +396,8 @@ function SimulationContent({
             style={[
               styles.orb,
               {
-                backgroundColor: isActive ? PRIMARY + '22' : colors.card,
-                borderColor: isActive ? PRIMARY : colors.border,
+                backgroundColor: isActive ? RED + '22' : colors.card,
+                borderColor: isActive ? RED : colors.border,
                 transform: [{ scale: orbScaleAnim }],
               },
             ]}
@@ -394,7 +405,7 @@ function SimulationContent({
             <View
               style={[
                 styles.orbInner,
-                { backgroundColor: isActive ? PRIMARY + '33' : colors.border + '55' },
+                { backgroundColor: isActive ? RED + '33' : colors.border + '55' },
               ]}
             >
               <Ionicons
@@ -408,14 +419,14 @@ function SimulationContent({
                         : 'mic-outline'
                 }
                 size={44}
-                color={isActive ? PRIMARY : colors.mutedForeground}
+                color={isActive ? RED : colors.mutedForeground}
               />
             </View>
           </Animated.View>
         </View>
 
         {/* Status text */}
-        <Text style={[styles.statusLabel, { color: isActive ? PRIMARY : colors.mutedForeground }]}>
+        <Text style={[styles.statusLabel, { color: isActive ? RED : colors.mutedForeground }]}>
           {statusLabel}
         </Text>
 
@@ -424,7 +435,7 @@ function SimulationContent({
           <Text
             style={[
               styles.timerText,
-              { color: isLow ? '#ef4444' : timerActive ? colors.foreground : colors.mutedForeground },
+              { color: isLow ? RED : timerActive ? colors.foreground : colors.mutedForeground },
             ]}
           >
             {timeString}
@@ -432,7 +443,7 @@ function SimulationContent({
           <Text
             style={[
               styles.timerSub,
-              { color: isLow ? '#ef444488' : colors.mutedForeground },
+              { color: isLow ? RED + '88' : colors.mutedForeground },
             ]}
           >
             {timerActive ? 'TIME REMAINING' : 'DURATION'}
@@ -444,7 +455,7 @@ function SimulationContent({
           <View
             style={[
               styles.progressFill,
-              { flex: progressFraction, backgroundColor: isLow ? '#ef4444' : PRIMARY },
+              { flex: progressFraction, backgroundColor: isLow ? RED : RED },
             ]}
           />
           <View style={{ flex: 1 - progressFraction }} />
@@ -454,7 +465,7 @@ function SimulationContent({
       {/* Error banner */}
       {callError && (
         <View style={styles.errorBanner}>
-          <Ionicons name="alert-circle-outline" size={16} color="#ef4444" style={{ marginRight: 8 }} />
+          <Ionicons name="alert-circle-outline" size={16} color={RED} style={{ marginRight: 8 }} />
           <Text style={styles.errorText}>{callError}</Text>
         </View>
       )}
@@ -463,7 +474,7 @@ function SimulationContent({
       <View style={styles.controls}>
         {callStatus === 'idle' ? (
           <TouchableOpacity
-            style={[styles.connectBtn, { backgroundColor: PRIMARY }]}
+            style={[styles.connectBtn, { backgroundColor: RED }]}
             onPress={handleConnect}
             activeOpacity={0.85}
             testID="connect-call-button"
@@ -474,9 +485,9 @@ function SimulationContent({
         ) : (
           <View style={styles.activeControls}>
             <View style={styles.activeControlsRow}>
-              {/* Mic muted info — placeholder for future */}
+              {/* Mic live indicator */}
               <View style={[styles.controlPill, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                <Ionicons name="mic-outline" size={20} color={PRIMARY} />
+                <Ionicons name="mic-outline" size={20} color={RED} />
                 <Text style={[styles.controlPillText, { color: colors.foreground }]}>Live</Text>
               </View>
 
@@ -492,11 +503,11 @@ function SimulationContent({
 
               {/* Timer status pill */}
               <View style={[styles.controlPill, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                <Ionicons name="timer-outline" size={20} color={isLow ? '#ef4444' : PRIMARY} />
+                <Ionicons name="timer-outline" size={20} color={isLow ? RED : RED} />
                 <Text
                   style={[
                     styles.controlPillText,
-                    { color: isLow ? '#ef4444' : colors.foreground },
+                    { color: isLow ? RED : colors.foreground },
                   ]}
                 >
                   {timeString}
@@ -640,7 +651,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 13,
     fontFamily: 'Inter_400Regular',
-    color: '#ef4444',
+    color: RED,
     lineHeight: 20,
   },
 
@@ -655,6 +666,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 20,
     borderRadius: 18,
+    shadowColor: RED,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 14,
+    elevation: 8,
   },
   connectBtnText: {
     fontSize: 20,
@@ -687,7 +703,7 @@ const styles = StyleSheet.create({
     width: 72,
     height: 72,
     borderRadius: 36,
-    backgroundColor: '#ef4444',
+    backgroundColor: RED,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -695,7 +711,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#ef4444',
+    backgroundColor: RED,
     paddingVertical: 18,
     borderRadius: 18,
   },
@@ -733,6 +749,13 @@ const styles = StyleSheet.create({
     letterSpacing: -0.5,
     lineHeight: 36,
   },
+  revealWaveContainer: {
+    width: W - 48,
+    height: WAVE_H,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginVertical: -4,
+  },
   revealStatCard: {
     width: '100%',
     borderRadius: 18,
@@ -747,7 +770,7 @@ const styles = StyleSheet.create({
   revealStatNumber: {
     fontSize: 56,
     fontFamily: 'Inter_700Bold',
-    color: '#ef4444',
+    color: RED,
     letterSpacing: -2,
     lineHeight: 62,
   },
@@ -786,9 +809,9 @@ const styles = StyleSheet.create({
   },
   revealRiskChip: {
     flex: 1,
-    backgroundColor: '#0d1f26',
+    backgroundColor: '#1f0707',
     borderWidth: 1,
-    borderColor: '#00b4d830',
+    borderColor: RED + '30',
     borderRadius: 14,
     paddingVertical: 14,
     paddingHorizontal: 10,
@@ -798,7 +821,7 @@ const styles = StyleSheet.create({
   revealRiskLabel: {
     fontSize: 12,
     fontFamily: 'Inter_500Medium',
-    color: '#00b4d8',
+    color: RED,
     textAlign: 'center',
     lineHeight: 17,
   },

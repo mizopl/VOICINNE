@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   Alert,
   Animated,
+  Dimensions,
   Platform,
   StyleSheet,
   Text,
@@ -18,9 +19,13 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useColors } from '@/hooks/useColors';
 import { cloneVoice, createAgent, generatePersona, transcribeAudio } from '@/utils/apiClient';
+import { WaveformLine, buildFlatPoints, buildSinePoints } from '@/utils/waveform';
 
+const RED = '#ef4444';
 const MAX_SECONDS = 60;
 const PROMPT_TRIGGER = 30;
+const W = Dimensions.get('window').width;
+const WAVE_H = 64;
 
 const PROCESSING_STEPS = [
   'Uploading audio sample...',
@@ -60,13 +65,30 @@ export default function OnboardingScreen() {
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const pulseLoop = useRef<Animated.CompositeAnimation | null>(null);
 
+  /* ── Waveform state for recording phase ─────────────────────── */
+  const [wavePoints, setWavePoints] = useState(() => buildFlatPoints(W, WAVE_H));
+  const wavePhaseRef = useRef(0);
+  const waveAmpRef = useRef(0);
+  const waveIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
   const topPad = Platform.OS === 'web' ? 67 : insets.top;
   const bottomPad = Platform.OS === 'web' ? 34 : insets.bottom;
+
+  const stopWaveAnimation = useCallback(() => {
+    if (waveIntervalRef.current) {
+      clearInterval(waveIntervalRef.current);
+      waveIntervalRef.current = null;
+    }
+    wavePhaseRef.current = 0;
+    waveAmpRef.current = 0;
+    setWavePoints(buildFlatPoints(W, WAVE_H));
+  }, []);
 
   useEffect(() => {
     return () => {
       if (countdownRef.current) clearInterval(countdownRef.current);
       if (stepIntervalRef.current) clearInterval(stepIntervalRef.current);
+      if (waveIntervalRef.current) clearInterval(waveIntervalRef.current);
       if (recordingRef.current) {
         recordingRef.current.stopAndUnloadAsync().catch(() => {});
         recordingRef.current = null;
@@ -163,6 +185,7 @@ export default function OnboardingScreen() {
       countdownRef.current = null;
     }
     stopPulse();
+    stopWaveAnimation();
 
     if (!recordingRef.current) {
       setPhase('idle');
@@ -201,7 +224,14 @@ export default function OnboardingScreen() {
       });
 
       const { recording } = await Audio.Recording.createAsync(
-        Audio.RecordingOptionsPresets.HIGH_QUALITY
+        { ...Audio.RecordingOptionsPresets.HIGH_QUALITY, isMeteringEnabled: true },
+        (status) => {
+          if (status.isRecording && status.metering != null) {
+            const normalized = Math.max(0, Math.min(1, (status.metering + 60) / 60));
+            waveAmpRef.current = 8 + normalized * 28;
+          }
+        },
+        80
       );
       recordingRef.current = recording;
 
@@ -211,6 +241,11 @@ export default function OnboardingScreen() {
       setPhase('recording');
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       startPulse();
+
+      waveIntervalRef.current = setInterval(() => {
+        wavePhaseRef.current += 0.05;
+        setWavePoints(buildSinePoints(wavePhaseRef.current, waveAmpRef.current, W, WAVE_H));
+      }, 33);
 
       let remaining = MAX_SECONDS;
       countdownRef.current = setInterval(() => {
@@ -239,6 +274,7 @@ export default function OnboardingScreen() {
     setShowPrompt(false);
     promptAnim.setValue(0);
     setSecondsLeft(MAX_SECONDS);
+    stopWaveAnimation();
     setPhase('idle');
   };
 
@@ -301,23 +337,24 @@ export default function OnboardingScreen() {
     return `${mins}:${rem < 10 ? '0' : ''}${rem}`;
   };
 
+  /* ── PROCESSING PHASE ───────────────────────────────────────── */
   if (phase === 'processing') {
     return (
       <View
         style={[styles.container, styles.centered, {
-          backgroundColor: colors.background,
+          backgroundColor: '#0a0a0a',
           paddingTop: topPad,
           paddingBottom: bottomPad,
         }]}
         testID="processing-view"
       >
-        <View style={[styles.spinnerRing, { borderColor: colors.primary + '40' }]}>
-          <ActivityIndicator size="large" color={colors.primary} />
+        <View style={styles.spinnerRing}>
+          <ActivityIndicator size="large" color={RED} />
         </View>
 
         <View style={styles.processingTextBlock}>
           <Animated.Text
-            style={[styles.processingStatus, { color: colors.foreground, opacity: fadeAnim }]}
+            style={[styles.processingStatus, { color: '#f0f0f0', opacity: fadeAnim }]}
           >
             {PROCESSING_STEPS[stepIndex]}
           </Animated.Text>
@@ -326,63 +363,64 @@ export default function OnboardingScreen() {
     );
   }
 
+  /* ── IDLE PHASE ─────────────────────────────────────────────── */
   if (phase === 'idle') {
     return (
-      <View style={[styles.container, { backgroundColor: colors.background, paddingTop: topPad, paddingBottom: bottomPad }]}>
+      <View style={[styles.container, { backgroundColor: '#0a0a0a', paddingTop: topPad, paddingBottom: bottomPad }]}>
         <View style={styles.header}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backBtn} testID="back-button">
-            <Ionicons name="chevron-back" size={28} color={colors.mutedForeground} />
+            <Ionicons name="chevron-back" size={28} color="#9ca3af" />
           </TouchableOpacity>
         </View>
 
         <View style={styles.idleContent}>
           <View style={styles.idleTitleBlock}>
-            <Text style={[styles.mainTitle, { color: colors.foreground }]}>
+            <Text style={styles.mainTitle}>
               {t.recordingTitle}
             </Text>
-            <Text style={[styles.onboardingSubtitle, { color: '#9ca3af' }]}>
+            <Text style={styles.onboardingSubtitle}>
               {t.onboardingSubtitle}
             </Text>
           </View>
 
           <View style={styles.stepsContainer}>
-            <View style={[styles.stepRow, { backgroundColor: '#141414', borderColor: '#242424' }]}>
-              <View style={[styles.stepIconWrap, { backgroundColor: colors.primary + '22' }]}>
-                <Ionicons name="mic-outline" size={22} color={colors.primary} />
+            <View style={styles.stepRow}>
+              <View style={styles.stepIconWrap}>
+                <Ionicons name="mic-outline" size={22} color={RED} />
               </View>
               <View style={styles.stepText}>
-                <Text style={[styles.stepHeader, { color: colors.foreground }]}>
+                <Text style={styles.stepHeader}>
                   {'1. ' + t.step1Header}
                 </Text>
-                <Text style={[styles.stepDesc, { color: '#d1d5db' }]}>
+                <Text style={styles.stepDesc}>
                   {t.step1Desc}
                 </Text>
               </View>
             </View>
 
-            <View style={[styles.stepRow, { backgroundColor: '#141414', borderColor: '#242424' }]}>
-              <View style={[styles.stepIconWrap, { backgroundColor: colors.primary + '22' }]}>
-                <Ionicons name="chatbubbles-outline" size={22} color={colors.primary} />
+            <View style={styles.stepRow}>
+              <View style={styles.stepIconWrap}>
+                <Ionicons name="chatbubbles-outline" size={22} color={RED} />
               </View>
               <View style={styles.stepText}>
-                <Text style={[styles.stepHeader, { color: colors.foreground }]}>
+                <Text style={styles.stepHeader}>
                   {'2. ' + t.step2Header}
                 </Text>
-                <Text style={[styles.stepDesc, { color: '#d1d5db' }]}>
+                <Text style={styles.stepDesc}>
                   {t.step2Desc}
                 </Text>
               </View>
             </View>
 
-            <View style={[styles.stepRow, { backgroundColor: '#141414', borderColor: '#242424' }]}>
-              <View style={[styles.stepIconWrap, { backgroundColor: colors.primary + '22' }]}>
-                <Ionicons name="color-wand-outline" size={22} color={colors.primary} />
+            <View style={styles.stepRow}>
+              <View style={styles.stepIconWrap}>
+                <Ionicons name="color-wand-outline" size={22} color={RED} />
               </View>
               <View style={styles.stepText}>
-                <Text style={[styles.stepHeader, { color: colors.foreground }]}>
+                <Text style={styles.stepHeader}>
                   {'3. ' + t.step3Header}
                 </Text>
-                <Text style={[styles.stepDesc, { color: '#d1d5db' }]}>
+                <Text style={styles.stepDesc}>
                   {t.step3Desc}
                 </Text>
               </View>
@@ -392,13 +430,13 @@ export default function OnboardingScreen() {
 
         <View style={styles.bottomSection}>
           <TouchableOpacity
-            style={[styles.startButton, { backgroundColor: colors.primary }]}
+            style={styles.startButton}
             onPress={handleStartRecording}
             activeOpacity={0.85}
             testID="start-recording-button"
           >
-            <Ionicons name="mic" size={24} color={colors.primaryForeground} style={{ marginRight: 10 }} />
-            <Text style={[styles.startButtonText, { color: colors.primaryForeground }]}>
+            <Ionicons name="mic" size={24} color="#ffffff" style={{ marginRight: 10 }} />
+            <Text style={styles.startButtonText}>
               {t.startRecordingBtn}
             </Text>
           </TouchableOpacity>
@@ -407,33 +445,37 @@ export default function OnboardingScreen() {
     );
   }
 
+  /* ── RECORDING PHASE ────────────────────────────────────────── */
   if (phase === 'recording') {
     return (
       <View style={[styles.container, styles.centered, {
-        backgroundColor: colors.background,
+        backgroundColor: '#0a0a0a',
         paddingTop: topPad,
         paddingBottom: bottomPad,
       }]}>
         <Animated.View style={{ transform: [{ scale: pulseAnim }] }}>
-          <View style={[styles.timerRing, { borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.10)' }]}>
+          <View style={styles.timerRing}>
             <View style={styles.timerDot} />
             <Text style={styles.timerText}>{formatTime(secondsLeft)}</Text>
           </View>
         </Animated.View>
 
+        {/* Live waveform driven by mic metering */}
+        <View style={styles.waveContainer}>
+          <WaveformLine points={wavePoints} color={RED} width={W} height={WAVE_H} />
+        </View>
+
         <Animated.View
           style={[
             styles.promptBox,
             {
-              backgroundColor: colors.primary + '1A',
-              borderColor: colors.primary,
               opacity: promptAnim,
               transform: [{ scale: promptAnim }],
             },
           ]}
           pointerEvents="none"
         >
-          <Text style={[styles.promptText, { color: colors.primary }]}>
+          <Text style={styles.promptText}>
             {t.promptText}
           </Text>
         </Animated.View>
@@ -451,58 +493,61 @@ export default function OnboardingScreen() {
     );
   }
 
+  /* ── PREVIEW PHASE ──────────────────────────────────────────── */
   return (
-    <View style={[styles.container, { backgroundColor: colors.background, paddingTop: topPad, paddingBottom: bottomPad }]}>
+    <View style={[styles.container, { backgroundColor: '#0a0a0a', paddingTop: topPad, paddingBottom: bottomPad }]}>
       <View style={styles.header}>
         <TouchableOpacity onPress={handleReRecord} style={styles.backBtn}>
-          <Ionicons name="chevron-back" size={28} color={colors.mutedForeground} />
+          <Ionicons name="chevron-back" size={28} color="#9ca3af" />
         </TouchableOpacity>
       </View>
 
       <View style={styles.previewContent}>
-        <View style={[styles.recordedBadge, { backgroundColor: colors.primary + '22', borderColor: colors.primary + '55' }]}>
-          <Ionicons name="checkmark-circle" size={18} color={colors.primary} style={{ marginRight: 6 }} />
-          <Text style={[styles.recordedText, { color: colors.primary }]}>{t.recorded}</Text>
+        <View style={styles.recordedBadge}>
+          <Ionicons name="checkmark-circle" size={18} color={RED} style={{ marginRight: 6 }} />
+          <Text style={styles.recordedText}>{t.recorded}</Text>
         </View>
 
         <TouchableOpacity
-          style={[styles.playerButton, { backgroundColor: colors.primary + '18', borderColor: colors.primary + '55', borderWidth: 2 }]}
+          style={styles.playerButton}
           onPress={handlePlayPause}
           activeOpacity={0.8}
           testID="play-pause-button"
         >
-          <Ionicons name={isPlaying ? 'pause' : 'play'} size={52} color={colors.primary} />
+          <Ionicons name={isPlaying ? 'pause' : 'play'} size={52} color={RED} />
         </TouchableOpacity>
 
-        <Text style={[styles.playerHint, { color: colors.mutedForeground }]}>
+        <Text style={styles.playerHint}>
           {isPlaying ? t.recording : t.listenBack}
         </Text>
       </View>
 
       <View style={styles.previewActions}>
         <TouchableOpacity
-          style={[styles.reRecordButton, { borderColor: colors.border }]}
+          style={styles.reRecordButton}
           onPress={handleReRecord}
           activeOpacity={0.85}
           testID="re-record-button"
         >
-          <Ionicons name="refresh" size={20} color={colors.mutedForeground} style={{ marginRight: 8 }} />
-          <Text style={[styles.reRecordText, { color: colors.mutedForeground }]}>{t.reRecord}</Text>
+          <Ionicons name="refresh" size={20} color="#9ca3af" style={{ marginRight: 8 }} />
+          <Text style={styles.reRecordText}>{t.reRecord}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.sendButton, { backgroundColor: colors.primary }]}
+          style={styles.sendButton}
           onPress={runProcessingPipeline}
           activeOpacity={0.85}
           testID="send-for-cloning-button"
         >
-          <Text style={[styles.sendButtonText, { color: colors.primaryForeground }]}>{t.sendForCloning}</Text>
-          <Ionicons name="arrow-forward" size={22} color={colors.primaryForeground} style={{ marginLeft: 8 }} />
+          <Text style={styles.sendButtonText}>{t.sendForCloning}</Text>
+          <Ionicons name="arrow-forward" size={22} color="#ffffff" style={{ marginLeft: 8 }} />
         </TouchableOpacity>
       </View>
     </View>
   );
 }
+
+/* ── Styles ──────────────────────────────────────────────────── */
 
 const styles = StyleSheet.create({
   container: {
@@ -512,13 +557,14 @@ const styles = StyleSheet.create({
   centered: {
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 32,
+    gap: 28,
   },
   spinnerRing: {
     width: 96,
     height: 96,
     borderRadius: 48,
     borderWidth: 2,
+    borderColor: RED + '40',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -532,13 +578,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter_600SemiBold',
     textAlign: 'center',
     lineHeight: 26,
-  },
-  processingStepLabel: {
-    fontSize: 13,
-    fontFamily: 'Inter_400Regular',
-    textAlign: 'center',
-    letterSpacing: 0.5,
-    textTransform: 'uppercase',
   },
   header: {
     flexDirection: 'row',
@@ -563,16 +602,13 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter_700Bold',
     lineHeight: 36,
     letterSpacing: -0.5,
+    color: '#f0f0f0',
   },
   onboardingSubtitle: {
     fontSize: 15,
     fontFamily: 'Inter_400Regular',
     lineHeight: 22,
-  },
-  instructions: {
-    fontSize: 16,
-    fontFamily: 'Inter_400Regular',
-    lineHeight: 26,
+    color: '#9ca3af',
   },
   stepsContainer: {
     gap: 12,
@@ -584,6 +620,8 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     borderWidth: 1,
     padding: 18,
+    backgroundColor: '#141414',
+    borderColor: '#242424',
   },
   stepIconWrap: {
     width: 44,
@@ -592,6 +630,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     flexShrink: 0,
+    backgroundColor: RED + '22',
   },
   stepText: {
     flex: 1,
@@ -601,11 +640,13 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontFamily: 'Inter_600SemiBold',
     lineHeight: 22,
+    color: '#f0f0f0',
   },
   stepDesc: {
     fontSize: 14,
     fontFamily: 'Inter_400Regular',
     lineHeight: 28,
+    color: '#d1d5db',
   },
   bottomSection: {
     paddingBottom: 16,
@@ -616,16 +657,27 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 20,
     borderRadius: 18,
+    backgroundColor: RED,
+    shadowColor: RED,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 14,
+    elevation: 8,
   },
   startButtonText: {
     fontSize: 20,
     fontFamily: 'Inter_700Bold',
+    color: '#ffffff',
   },
+
+  /* Timer ring */
   timerRing: {
     width: 200,
     height: 200,
     borderRadius: 100,
     borderWidth: 4,
+    borderColor: RED,
+    backgroundColor: 'rgba(239,68,68,0.10)',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
@@ -634,33 +686,45 @@ const styles = StyleSheet.create({
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: '#ef4444',
+    backgroundColor: RED,
   },
   timerText: {
     fontSize: 52,
     fontFamily: 'Inter_700Bold',
-    color: '#ef4444',
+    color: RED,
     letterSpacing: -1,
   },
+
+  /* Waveform in recording phase */
+  waveContainer: {
+    width: W,
+    height: WAVE_H,
+    alignItems: 'center',
+  },
+
+  /* Prompt overlay */
   promptBox: {
     borderWidth: 2,
     borderRadius: 20,
     paddingVertical: 18,
     paddingHorizontal: 28,
     alignItems: 'center',
+    borderColor: RED,
+    backgroundColor: RED + '1A',
   },
   promptText: {
     fontSize: 26,
     fontFamily: 'Inter_700Bold',
     textAlign: 'center',
     letterSpacing: -0.3,
+    color: RED,
   },
   stopButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 10,
-    backgroundColor: '#ef4444',
+    backgroundColor: RED,
     paddingVertical: 16,
     paddingHorizontal: 32,
     borderRadius: 16,
@@ -676,6 +740,8 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter_600SemiBold',
     color: '#ffffff',
   },
+
+  /* Preview */
   previewContent: {
     flex: 1,
     alignItems: 'center',
@@ -689,10 +755,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderRadius: 20,
     borderWidth: 1,
+    backgroundColor: RED + '22',
+    borderColor: RED + '55',
   },
   recordedText: {
     fontSize: 15,
     fontFamily: 'Inter_600SemiBold',
+    color: RED,
   },
   playerButton: {
     width: 160,
@@ -700,10 +769,14 @@ const styles = StyleSheet.create({
     borderRadius: 80,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: RED + '18',
+    borderWidth: 2,
+    borderColor: RED + '55',
   },
   playerHint: {
     fontSize: 15,
     fontFamily: 'Inter_400Regular',
+    color: '#9ca3af',
   },
   previewActions: {
     gap: 12,
@@ -716,10 +789,12 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderRadius: 16,
     borderWidth: 2,
+    borderColor: '#262626',
   },
   reRecordText: {
     fontSize: 17,
     fontFamily: 'Inter_600SemiBold',
+    color: '#9ca3af',
   },
   sendButton: {
     flexDirection: 'row',
@@ -727,9 +802,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 20,
     borderRadius: 18,
+    backgroundColor: RED,
+    shadowColor: RED,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 14,
+    elevation: 8,
   },
   sendButtonText: {
     fontSize: 20,
     fontFamily: 'Inter_700Bold',
+    color: '#ffffff',
   },
 });

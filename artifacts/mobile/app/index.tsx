@@ -15,11 +15,11 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import Svg, { Polyline } from 'react-native-svg';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { LANGUAGE_LABELS, Language, useLanguage } from '@/contexts/LanguageContext';
 import { useColors } from '@/hooks/useColors';
+import { WaveformLine, buildFlatPoints, buildSinePoints } from '@/utils/waveform';
 
 /* ── Constants ───────────────────────────────────────────────── */
 
@@ -37,39 +37,10 @@ const SCAMS = [
   { label: 'Information Extraction', desc: 'AI impersonates family members to trick you into sharing passwords or personal data.' },
 ];
 
-/* ── Waveform helpers ────────────────────────────────────────── */
+/* ── Waveform dimensions ─────────────────────────────────────── */
 
 const W = Dimensions.get('window').width;
 const WAVE_H = 72;
-const MID = WAVE_H / 2;
-const N = 180;
-
-function buildPoints(phase: number, amp: number): string {
-  return Array.from({ length: N }, (_, i) => {
-    const x = (i / (N - 1)) * W;
-    const t = (i / N) * Math.PI * 10;
-    const y =
-      MID +
-      Math.sin(t + phase) * amp * 0.55 +
-      Math.sin(t * 1.8 + phase * 0.8) * amp * 0.28 +
-      Math.sin(t * 3.5 + phase * 1.3) * amp * 0.12;
-    return `${x.toFixed(1)},${y.toFixed(1)}`;
-  }).join(' ');
-}
-
-/* ── Waveform component (isolated to avoid full-screen re-renders) */
-const WaveformLine = React.memo(({ points }: { points: string }) => (
-  <Svg width={W} height={WAVE_H}>
-    <Polyline
-      points={points}
-      stroke={RED}
-      strokeWidth="2"
-      fill="none"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </Svg>
-));
 
 /* ── Main screen ─────────────────────────────────────────────── */
 
@@ -84,19 +55,22 @@ export default function HomeScreen() {
   const bottomPad = Platform.OS === 'web' ? 28 : insets.bottom;
 
   /* ── Waveform state ─────────────────────────────────────────── */
-  const [wavePoints, setWavePoints] = useState(() => buildPoints(0, 10));
+  const [wavePoints, setWavePoints] = useState(() => buildFlatPoints(W, WAVE_H));
   const phaseRef = useRef(0);
-  const ampRef = useRef(10);
+  const ampRef = useRef(0);
   const recordingRef = useRef<Audio.Recording | null>(null);
+  const waveIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [micActive, setMicActive] = useState(false);
   const [micDenied, setMicDenied] = useState(false);
 
-  useEffect(() => {
-    const id = setInterval(() => {
-      phaseRef.current += 0.05;
-      setWavePoints(buildPoints(phaseRef.current, ampRef.current));
-    }, 33);
-    return () => clearInterval(id);
+  const stopWaveAnimation = useCallback(() => {
+    if (waveIntervalRef.current) {
+      clearInterval(waveIntervalRef.current);
+      waveIntervalRef.current = null;
+    }
+    phaseRef.current = 0;
+    ampRef.current = 0;
+    setWavePoints(buildFlatPoints(W, WAVE_H));
   }, []);
 
   const stopMic = useCallback(async () => {
@@ -104,9 +78,9 @@ export default function HomeScreen() {
       await recordingRef.current?.stopAndUnloadAsync();
     } catch {}
     recordingRef.current = null;
-    ampRef.current = 10;
+    stopWaveAnimation();
     setMicActive(false);
-  }, []);
+  }, [stopWaveAnimation]);
 
   const toggleMic = useCallback(async () => {
     if (micActive) {
@@ -133,6 +107,11 @@ export default function HomeScreen() {
       recordingRef.current = recording;
       setMicActive(true);
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
+      waveIntervalRef.current = setInterval(() => {
+        phaseRef.current += 0.05;
+        setWavePoints(buildSinePoints(phaseRef.current, ampRef.current, W, WAVE_H));
+      }, 33);
     } catch {
       setMicDenied(true);
     }
@@ -207,7 +186,7 @@ export default function HomeScreen() {
 
       {/* ── Waveform ─────────────────────────────────────────────── */}
       <View style={styles.waveContainer}>
-        <WaveformLine points={wavePoints} />
+        <WaveformLine points={wavePoints} color={RED} width={W} height={WAVE_H} />
         {/* Mic toggle — overlaid bottom-right */}
         <TouchableOpacity
           style={[
@@ -501,19 +480,18 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   tickerDesc: {
-    fontSize: 12,
+    fontSize: 13,
     fontFamily: 'Inter_400Regular',
-    lineHeight: 18,
-    paddingLeft: 13,
+    lineHeight: 20,
   },
 
   /* Dots */
   dotsRow: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'center',
-    gap: 6,
+    gap: 7,
     marginBottom: 24,
+    marginTop: 4,
   },
   dot: {
     width: 6,
@@ -521,31 +499,27 @@ const styles = StyleSheet.create({
     borderRadius: 3,
   },
   dotActive: {
-    width: 16,
-    height: 6,
-    borderRadius: 3,
     backgroundColor: RED,
+    width: 18,
   },
 
   /* CTA */
   startBtn: {
     backgroundColor: RED,
     paddingVertical: 20,
-    borderRadius: 14,
+    borderRadius: 18,
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 14,
     shadowColor: RED,
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4,
+    shadowOpacity: 0.45,
     shadowRadius: 16,
-    elevation: 6,
+    elevation: 8,
   },
   startBtnText: {
-    fontSize: 14,
+    fontSize: 20,
     fontFamily: 'Inter_700Bold',
     color: '#ffffff',
-    letterSpacing: 2,
-    textTransform: 'uppercase',
   },
 
   /* Consent */
@@ -553,9 +527,9 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontFamily: 'Inter_400Regular',
     textAlign: 'center',
-    lineHeight: 15,
-    letterSpacing: 0.3,
-    marginBottom: 16,
+    lineHeight: 16,
+    marginBottom: 20,
+    letterSpacing: 0.2,
   },
 
   /* Test button */
@@ -564,47 +538,45 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 10,
+    borderRadius: 12,
     borderWidth: 1,
-    borderStyle: 'dashed',
     marginBottom: 8,
   },
   testBtnText: {
-    fontSize: 13,
-    fontFamily: 'Inter_400Regular',
+    fontSize: 12,
+    fontFamily: 'Inter_500Medium',
+    letterSpacing: 0.3,
   },
 
   /* Modal */
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.6)',
+    backgroundColor: 'rgba(0,0,0,0.7)',
     justifyContent: 'flex-end',
   },
   modalSheet: {
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
+    paddingHorizontal: 24,
     paddingTop: 24,
     paddingBottom: 40,
     maxHeight: '70%',
   },
   modalTitle: {
     fontSize: 18,
-    fontFamily: 'Inter_600SemiBold',
-    textAlign: 'center',
-    marginBottom: 12,
-    paddingHorizontal: 24,
+    fontFamily: 'Inter_700Bold',
+    marginBottom: 16,
+    letterSpacing: -0.3,
   },
   langOption: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 18,
-    paddingHorizontal: 28,
-    borderBottomWidth: StyleSheet.hairlineWidth,
+    justifyContent: 'space-between',
+    paddingVertical: 16,
+    borderBottomWidth: 1,
   },
   langOptionText: {
-    flex: 1,
-    fontSize: 18,
-    fontFamily: 'Inter_400Regular',
+    fontSize: 16,
+    fontFamily: 'Inter_500Medium',
   },
 });

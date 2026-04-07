@@ -1,10 +1,42 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
 interface PhoneFrameProps {
   children: React.ReactNode;
 }
 
+function useIsLandscape() {
+  const [isLandscape, setIsLandscape] = useState(
+    () => window.matchMedia('(orientation: landscape)').matches
+  );
+
+  useEffect(() => {
+    const mq = window.matchMedia('(orientation: landscape)');
+    const handler = (e: MediaQueryListEvent) => setIsLandscape(e.matches);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
+
+  return isLandscape;
+}
+
 export function PhoneFrame({ children }: PhoneFrameProps) {
+  const isLandscape = useIsLandscape();
+
+  if (!isLandscape) {
+    return (
+      <div
+        style={{
+          minHeight: '100vh',
+          backgroundColor: '#0a0a0a',
+          fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+          overflowX: 'hidden',
+        }}
+      >
+        {children}
+      </div>
+    );
+  }
+
   return (
     <div
       style={{

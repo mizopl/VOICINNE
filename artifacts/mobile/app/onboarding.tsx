@@ -413,9 +413,9 @@ export default function OnboardingScreen() {
   /* ── IDLE PHASE ─────────────────────────────────────────────── */
   if (phase === 'idle') {
     return (
-      <View style={[styles.container, { backgroundColor: '#0a0a0a', paddingTop: topPad, paddingBottom: bottomPad }]}>
+      <View style={[styles.container, { backgroundColor: '#0a0a0a', paddingTop: topPad }]}>
 
-        {/* ── Top bar: back | VOICINNE | lang picker ── */}
+        {/* ── Top bar: back | VOICINNE | lang picker — pinned, no extra paddingTop ── */}
         <View style={styles.obTopBar}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backBtn} testID="back-button">
             <Ionicons name="chevron-back" size={28} color={MUTED} />
@@ -433,68 +433,60 @@ export default function OnboardingScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* ── READ BEFORE PROCEEDING badge ── */}
-        <View style={[styles.readBadge, { backgroundColor: RED + '15', borderColor: RED + '40' }]}>
-          <Ionicons name="alert-circle-outline" size={14} color={RED} />
-          <Text style={[styles.readBadgeText, { color: RED }]}>READ BEFORE PROCEEDING</Text>
-        </View>
-
-        <View style={styles.idleContent}>
-          <View style={styles.idleTitleBlock}>
-            <Text style={styles.mainTitle}>
-              {t.recordingTitle}
-            </Text>
-            <Text style={styles.onboardingSubtitle}>
-              {t.onboardingSubtitle}
-            </Text>
+        {/* ── Scrollable content ── */}
+        <ScrollView
+          style={{ flex: 1 }}
+          contentContainerStyle={styles.idleScrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* READ BEFORE PROCEEDING badge */}
+          <View style={[styles.readBadge, { backgroundColor: RED + '15', borderColor: RED + '40' }]}>
+            <Ionicons name="alert-circle-outline" size={14} color={RED} />
+            <Text style={[styles.readBadgeText, { color: RED }]}>READ BEFORE PROCEEDING</Text>
           </View>
 
+          {/* Title block */}
+          <View style={styles.idleTitleBlock}>
+            <Text style={styles.mainTitle}>{t.recordingTitle}</Text>
+            <Text style={styles.onboardingSubtitle}>{t.onboardingSubtitle}</Text>
+          </View>
+
+          {/* Step cards */}
           <View style={styles.stepsContainer}>
             <View style={styles.stepRow}>
               <View style={styles.stepIconWrap}>
-                <Ionicons name="mic-outline" size={22} color={RED} />
+                <Ionicons name="mic-outline" size={20} color={RED} />
               </View>
               <View style={styles.stepText}>
-                <Text style={styles.stepHeader}>
-                  {'1. ' + t.step1Header}
-                </Text>
-                <Text style={styles.stepDesc}>
-                  {t.step1Desc}
-                </Text>
+                <Text style={styles.stepHeader}>{'1. ' + t.step1Header}</Text>
+                <Text style={styles.stepDesc}>{t.step1Desc}</Text>
               </View>
             </View>
 
             <View style={styles.stepRow}>
               <View style={styles.stepIconWrap}>
-                <Ionicons name="chatbubbles-outline" size={22} color={RED} />
+                <Ionicons name="chatbubbles-outline" size={20} color={RED} />
               </View>
               <View style={styles.stepText}>
-                <Text style={styles.stepHeader}>
-                  {'2. ' + t.step2Header}
-                </Text>
-                <Text style={styles.stepDesc}>
-                  {t.step2Desc}
-                </Text>
+                <Text style={styles.stepHeader}>{'2. ' + t.step2Header}</Text>
+                <Text style={styles.stepDesc}>{t.step2Desc}</Text>
               </View>
             </View>
 
             <View style={styles.stepRow}>
               <View style={styles.stepIconWrap}>
-                <Ionicons name="color-wand-outline" size={22} color={RED} />
+                <Ionicons name="color-wand-outline" size={20} color={RED} />
               </View>
               <View style={styles.stepText}>
-                <Text style={styles.stepHeader}>
-                  {'3. ' + t.step3Header}
-                </Text>
-                <Text style={styles.stepDesc}>
-                  {t.step3Desc}
-                </Text>
+                <Text style={styles.stepHeader}>{'3. ' + t.step3Header}</Text>
+                <Text style={styles.stepDesc}>{t.step3Desc}</Text>
               </View>
             </View>
           </View>
-        </View>
+        </ScrollView>
 
-        <View style={styles.bottomSection}>
+        {/* ── Start button — pinned at bottom ── */}
+        <View style={[styles.bottomSection, { paddingBottom: bottomPad || 16 }]}>
           <TouchableOpacity
             style={styles.startButton}
             onPress={handleStartRecording}
@@ -502,9 +494,7 @@ export default function OnboardingScreen() {
             testID="start-recording-button"
           >
             <Ionicons name="mic" size={24} color="#ffffff" style={{ marginRight: 10 }} />
-            <Text style={styles.startButtonText}>
-              {t.startRecordingBtn}
-            </Text>
+            <Text style={styles.startButtonText}>{t.startRecordingBtn}</Text>
           </TouchableOpacity>
         </View>
 
@@ -697,8 +687,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingTop: 12,
-    marginBottom: 14,
+    paddingTop: 0,
+    marginBottom: 8,
+    paddingHorizontal: 0,
+    minHeight: 44,
   },
   obWordmark: {
     fontSize: 18,
@@ -725,13 +717,12 @@ const styles = StyleSheet.create({
   readBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    alignSelf: 'center',
+    alignSelf: 'flex-start',
     gap: 6,
-    paddingVertical: 7,
-    paddingHorizontal: 14,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
     borderRadius: 24,
     borderWidth: 1,
-    marginBottom: 10,
   },
   readBadgeText: {
     fontSize: 11,
@@ -777,6 +768,10 @@ const styles = StyleSheet.create({
     marginLeft: -24,
     marginBottom: 8,
   },
+  idleScrollContent: {
+    paddingBottom: 16,
+    gap: 18,
+  },
   idleContent: {
     flex: 1,
     justifyContent: 'center',
@@ -784,7 +779,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
   },
   idleTitleBlock: {
-    gap: 8,
+    gap: 6,
   },
   mainTitle: {
     fontSize: 28,
@@ -800,22 +795,22 @@ const styles = StyleSheet.create({
     color: '#9ca3af',
   },
   stepsContainer: {
-    gap: 12,
+    gap: 8,
   },
   stepRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    gap: 14,
-    borderRadius: 16,
+    gap: 12,
+    borderRadius: 14,
     borderWidth: 1,
-    padding: 18,
+    padding: 14,
     backgroundColor: '#141414',
     borderColor: '#242424',
   },
   stepIconWrap: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
+    width: 38,
+    height: 38,
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
     flexShrink: 0,
@@ -832,13 +827,13 @@ const styles = StyleSheet.create({
     color: '#f0f0f0',
   },
   stepDesc: {
-    fontSize: 14,
+    fontSize: 13,
     fontFamily: 'Inter_400Regular',
-    lineHeight: 28,
+    lineHeight: 19,
     color: '#d1d5db',
   },
   bottomSection: {
-    paddingBottom: 16,
+    paddingTop: 12,
   },
   startButton: {
     flexDirection: 'row',

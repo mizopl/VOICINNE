@@ -305,7 +305,7 @@ function SimulationContent({
         <TouchableOpacity
           onPress={() => {
             handleEndCall();
-            router.back();
+            router.replace('/');
           }}
           testID="back-button"
           hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}

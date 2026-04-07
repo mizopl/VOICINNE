@@ -64,6 +64,24 @@ function SimulationContent({
     },
   });
 
+  // Detect "connecting → disconnected" transition: this is how the SDK signals
+  // a failed connection attempt (e.g. mic blocked, network error). The SDK does
+  // NOT call onError for this — it only re-throws the promise, which the provider
+  // swallows. Watching the status transition is the only reliable way to catch it.
+  const prevStatusRef = useRef(status);
+  useEffect(() => {
+    const prev = prevStatusRef.current;
+    prevStatusRef.current = status;
+    if (prev === 'connecting' && status === 'disconnected') {
+      setCallStarted(false);
+      setConnectError(
+        Platform.OS === 'web'
+          ? 'Mic blocked in embedded preview. Open the app URL directly in a browser tab, or use a physical device.'
+          : 'Connection failed. Make sure microphone permission is granted and try again.'
+      );
+    }
+  }, [status]);
+
   const revealAnim = useRef(new Animated.Value(0)).current;
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const bar1Anim = useRef(new Animated.Value(0.3)).current;

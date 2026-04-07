@@ -55,7 +55,8 @@ export default function HomeScreen() {
           <Ionicons name="mic" size={52} color={colors.primary} />
         </View>
         <Text style={[styles.title, { color: colors.foreground }]}>{t.appTitle}</Text>
-        <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>{t.appSubtitle}</Text>
+        <Text style={[styles.tagline, { color: colors.foreground }]}>{t.appTagline}</Text>
+        <Text style={[styles.description, { color: colors.mutedForeground }]}>{t.appDescription}</Text>
       </View>
 
       <View style={styles.middleSection}>
@@ -63,23 +64,11 @@ export default function HomeScreen() {
           style={[styles.startButton, { backgroundColor: colors.primary }]}
           onPress={handleStart}
           activeOpacity={0.85}
-          testID="start-experiment-button"
+          testID="start-simulation-button"
         >
           <Ionicons name="play-circle" size={32} color={colors.primaryForeground} style={{ marginRight: 12 }} />
           <Text style={[styles.startButtonText, { color: colors.primaryForeground }]}>
             {t.startButton}
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.testButton, { borderColor: colors.border }]}
-          onPress={handleTestSimulation}
-          activeOpacity={0.7}
-          testID="test-simulation-button"
-        >
-          <Ionicons name="flask-outline" size={18} color={colors.mutedForeground} style={{ marginRight: 8 }} />
-          <Text style={[styles.testButtonText, { color: colors.mutedForeground }]}>
-            Test Simulation (skip onboarding)
           </Text>
         </TouchableOpacity>
 
@@ -94,6 +83,18 @@ export default function HomeScreen() {
             {LANGUAGE_LABELS[language]}
           </Text>
           <Ionicons name="chevron-down" size={18} color={colors.mutedForeground} />
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.testButton, { borderColor: colors.border }]}
+          onPress={handleTestSimulation}
+          activeOpacity={0.7}
+          testID="test-simulation-button"
+        >
+          <Ionicons name="flask-outline" size={18} color={colors.mutedForeground} style={{ marginRight: 8 }} />
+          <Text style={[styles.testButtonText, { color: colors.mutedForeground }]}>
+            Test Simulation (skip onboarding)
+          </Text>
         </TouchableOpacity>
       </View>
 
@@ -151,8 +152,8 @@ const styles = StyleSheet.create({
   },
   topSection: {
     alignItems: 'center',
-    paddingTop: 48,
-    gap: 16,
+    paddingTop: 40,
+    gap: 14,
   },
   iconRing: {
     width: 100,
@@ -167,14 +168,22 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter_700Bold',
     letterSpacing: -1,
   },
-  subtitle: {
-    fontSize: 16,
+  tagline: {
+    fontSize: 18,
+    fontFamily: 'Inter_600SemiBold',
+    textAlign: 'center',
+    lineHeight: 26,
+    letterSpacing: -0.2,
+  },
+  description: {
+    fontSize: 15,
     fontFamily: 'Inter_400Regular',
     textAlign: 'center',
     lineHeight: 24,
+    paddingHorizontal: 4,
   },
   middleSection: {
-    gap: 16,
+    gap: 14,
   },
   startButton: {
     flexDirection: 'row',
@@ -189,6 +198,19 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter_700Bold',
     letterSpacing: 0.3,
   },
+  langButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    borderRadius: 14,
+    borderWidth: 1,
+  },
+  langButtonText: {
+    flex: 1,
+    fontSize: 17,
+    fontFamily: 'Inter_500Medium',
+  },
   testButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -202,19 +224,6 @@ const styles = StyleSheet.create({
   testButtonText: {
     fontSize: 14,
     fontFamily: 'Inter_400Regular',
-  },
-  langButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 16,
-    paddingHorizontal: 20,
-    borderRadius: 14,
-    borderWidth: 1,
-  },
-  langButtonText: {
-    flex: 1,
-    fontSize: 17,
-    fontFamily: 'Inter_500Medium',
   },
   bottomSection: {
     paddingBottom: 16,

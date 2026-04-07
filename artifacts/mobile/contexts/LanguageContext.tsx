@@ -4,7 +4,8 @@ export type Language = 'ENG' | 'POL' | 'SPA' | 'GER' | 'FRA' | 'ITA';
 
 export interface Translations {
   appTitle: string;
-  appSubtitle: string;
+  appTagline: string;
+  appDescription: string;
   startButton: string;
   selectLanguage: string;
   recordingTitle: string;
@@ -43,8 +44,10 @@ export interface Translations {
 const TRANSLATIONS: Record<Language, Translations> = {
   ENG: {
     appTitle: 'Voicinne',
-    appSubtitle: 'A Deep Fake Awareness Experiment',
-    startButton: 'Start Experiment',
+    appTagline: 'Protect your loved ones from AI voice scams.',
+    appDescription:
+      'Clone your own voice in just 60 seconds to safely simulate a deepfake phone call with your family. Give them the experience of an AI scam in a safe environment, so they know exactly how to protect themselves in the real world.',
+    startButton: 'Start the Simulation',
     selectLanguage: 'Select Language',
     recordingTitle: 'A voice clone from just 60 seconds of recording.',
     recordingInstructions: "First, record a spoken title, for example: 'This is a phone call to my grandmother who is celebrating her birthday this weekend.' Then, immediately pretend you are having a conversation with her. Our system will extract all the necessary identity data and context from your words.",
@@ -74,15 +77,18 @@ const TRANSLATIONS: Record<Language, Translations> = {
     timeRemaining: 'Time Remaining',
     safeWordPrompt: 'Establish a safety word with your loved ones.',
     backToHome: 'Back to Home',
-    aiDisclaimer: 'This experiment uses AI voice cloning for educational purposes only.',
+    aiDisclaimer:
+      'Educational Purpose Only: This app uses advanced Voice AI to teach cybersecurity. Voice recordings are stored securely for educational and security audit purposes.',
     processingVoice: 'Processing voice profile...',
     micPermissionTitle: 'Microphone Access Required',
     micPermissionDenied: 'Voicinne needs microphone access to record your voice. Please enable it in Settings.',
   },
   POL: {
     appTitle: 'Voicinne',
-    appSubtitle: 'Eksperyment Świadomości Deep Fake',
-    startButton: 'Rozpocznij Eksperyment',
+    appTagline: 'Chroń swoich bliskich przed oszustwami głosowymi AI.',
+    appDescription:
+      'Sklonuj swój głos w zaledwie 60 sekund, aby bezpiecznie zasymulować deepfake\'ową rozmowę telefoniczną z rodziną. Daj im doświadczenie ataku AI w bezpiecznym środowisku — żeby wiedzieli, jak się bronić w prawdziwym życiu.',
+    startButton: 'Rozpocznij Symulację',
     selectLanguage: 'Wybierz Język',
     recordingTitle: 'Klon głosu z zaledwie 60 sekund nagrania.',
     recordingInstructions: "Najpierw nagraj tytuł mówiony, na przykład: 'To jest rozmowa telefoniczna do mojej babci, która obchodzi swoje urodziny w ten weekend.' Następnie natychmiast udawaj, że rozmawiasz z nią. Nasz system wyodrębni wszystkie niezbędne dane tożsamości i kontekst z Twoich słów.",
@@ -112,15 +118,18 @@ const TRANSLATIONS: Record<Language, Translations> = {
     timeRemaining: 'Pozostały Czas',
     safeWordPrompt: 'Ustaw hasło bezpieczeństwa z bliskimi.',
     backToHome: 'Powrót do Domu',
-    aiDisclaimer: 'Ten eksperyment używa klonowania głosu AI wyłącznie w celach edukacyjnych.',
+    aiDisclaimer:
+      'Tylko do celów edukacyjnych: Ta aplikacja używa zaawansowanej sztucznej inteligencji do nauczania cyberbezpieczeństwa. Nagrania głosowe są bezpiecznie przechowywane w celach edukacyjnych i audytu bezpieczeństwa.',
     processingVoice: 'Przetwarzanie profilu głosu...',
     micPermissionTitle: 'Wymagany Dostęp do Mikrofonu',
     micPermissionDenied: 'Voicinne potrzebuje dostępu do mikrofonu. Włącz go w Ustawieniach.',
   },
   SPA: {
     appTitle: 'Voicinne',
-    appSubtitle: 'Un Experimento de Conciencia sobre Deep Fakes',
-    startButton: 'Iniciar Experimento',
+    appTagline: 'Protege a tus seres queridos de las estafas de voz con IA.',
+    appDescription:
+      'Clona tu voz en tan solo 60 segundos para simular de forma segura una llamada deepfake con tu familia. Dales la experiencia de una estafa de IA en un entorno seguro, para que sepan exactamente cómo protegerse en el mundo real.',
+    startButton: 'Iniciar la Simulación',
     selectLanguage: 'Seleccionar Idioma',
     recordingTitle: 'Un clon de voz en tan solo 60 segundos de grabación.',
     recordingInstructions: "Primero, graba un título hablado, por ejemplo: 'Esta es una llamada telefónica a mi abuela que celebra su cumpleaños este fin de semana.' Luego, imagina inmediatamente que estás hablando con ella. Nuestro sistema extraerá todos los datos de identidad y el contexto necesarios de tus palabras.",
@@ -150,15 +159,18 @@ const TRANSLATIONS: Record<Language, Translations> = {
     timeRemaining: 'Tiempo Restante',
     safeWordPrompt: 'Establece una palabra de seguridad con tus seres queridos.',
     backToHome: 'Volver al Inicio',
-    aiDisclaimer: 'Este experimento usa clonación de voz IA solo con fines educativos.',
+    aiDisclaimer:
+      'Solo para fines educativos: Esta aplicación usa IA de voz avanzada para enseñar ciberseguridad. Las grabaciones de voz se almacenan de forma segura con fines educativos y de auditoría de seguridad.',
     processingVoice: 'Procesando perfil de voz...',
     micPermissionTitle: 'Acceso al Micrófono Requerido',
     micPermissionDenied: 'Voicinne necesita acceso al micrófono. Actívalo en Ajustes.',
   },
   GER: {
     appTitle: 'Voicinne',
-    appSubtitle: 'Ein Deep-Fake-Bewusstseins-Experiment',
-    startButton: 'Experiment Starten',
+    appTagline: 'Schütze deine Liebsten vor KI-Stimmenbetrug.',
+    appDescription:
+      'Klone deine Stimme in nur 60 Sekunden, um sicher einen Deepfake-Anruf mit deiner Familie zu simulieren. Gib ihnen die Erfahrung eines KI-Betrugs in einer sicheren Umgebung, damit sie wissen, wie sie sich in der echten Welt schützen können.',
+    startButton: 'Simulation Starten',
     selectLanguage: 'Sprache Wählen',
     recordingTitle: 'Ein Stimmklon aus nur 60 Sekunden Aufnahme.',
     recordingInstructions: "Beginne mit einem gesprochenen Titel, zum Beispiel: 'Das ist ein Telefonanruf an meine Oma, die dieses Wochenende Geburtstag feiert.' Dann spiel sofort eine Unterhaltung mit ihr nach. Unser System extrahiert alle nötigen Identitätsdaten und Kontext aus deinen Worten.",
@@ -188,15 +200,18 @@ const TRANSLATIONS: Record<Language, Translations> = {
     timeRemaining: 'Verbleibende Zeit',
     safeWordPrompt: 'Vereinbare ein Sicherheitswort mit deinen Angehörigen.',
     backToHome: 'Zurück zur Startseite',
-    aiDisclaimer: 'Dieses Experiment nutzt KI-Stimmklonierung nur zu Bildungszwecken.',
+    aiDisclaimer:
+      'Nur zu Bildungszwecken: Diese App verwendet fortschrittliche KI-Sprachtechnologie, um Cybersicherheit zu vermitteln. Sprachaufnahmen werden sicher für Bildungs- und Sicherheitsauditzwecke gespeichert.',
     processingVoice: 'Stimmprofil wird verarbeitet...',
     micPermissionTitle: 'Mikrofonzugriff Erforderlich',
     micPermissionDenied: 'Voicinne benötigt Mikrofonzugriff. Bitte aktiviere ihn in den Einstellungen.',
   },
   FRA: {
     appTitle: 'Voicinne',
-    appSubtitle: 'Une Expérience de Sensibilisation aux Deep Fakes',
-    startButton: 'Démarrer l\'Expérience',
+    appTagline: 'Protégez vos proches des arnaques vocales par IA.',
+    appDescription:
+      'Clonez votre voix en seulement 60 secondes pour simuler en toute sécurité un appel deepfake avec votre famille. Donnez-leur l\'expérience d\'une arnaque IA dans un environnement sûr, afin qu\'ils sachent exactement comment se protéger dans le monde réel.',
+    startButton: 'Démarrer la Simulation',
     selectLanguage: 'Choisir la Langue',
     recordingTitle: 'Un clone vocal en seulement 60 secondes d\'enregistrement.',
     recordingInstructions: "Commencez par enregistrer un titre parlé, par exemple : 'C'est un appel téléphonique à ma grand-mère qui fête son anniversaire ce week-end.' Puis, faites immédiatement semblant d'avoir une conversation avec elle. Notre système extraira toutes les données d'identité et le contexte nécessaires de vos mots.",
@@ -226,15 +241,18 @@ const TRANSLATIONS: Record<Language, Translations> = {
     timeRemaining: 'Temps Restant',
     safeWordPrompt: 'Établissez un mot de sécurité avec vos proches.',
     backToHome: 'Retour à l\'Accueil',
-    aiDisclaimer: 'Cette expérience utilise le clonage vocal IA à des fins éducatives uniquement.',
+    aiDisclaimer:
+      'À des fins éducatives uniquement : Cette application utilise une IA vocale avancée pour enseigner la cybersécurité. Les enregistrements vocaux sont stockés en toute sécurité à des fins éducatives et d\'audit de sécurité.',
     processingVoice: 'Traitement du profil vocal...',
     micPermissionTitle: 'Accès au Microphone Requis',
     micPermissionDenied: 'Voicinne nécessite l\'accès au microphone. Activez-le dans les Paramètres.',
   },
   ITA: {
     appTitle: 'Voicinne',
-    appSubtitle: 'Un Esperimento di Consapevolezza sui Deep Fake',
-    startButton: 'Inizia Esperimento',
+    appTagline: 'Proteggi i tuoi cari dalle truffe vocali con l\'IA.',
+    appDescription:
+      'Clona la tua voce in soli 60 secondi per simulare in modo sicuro una telefonata deepfake con la tua famiglia. Dagli l\'esperienza di una truffa IA in un ambiente sicuro, così sapranno esattamente come proteggersi nel mondo reale.',
+    startButton: 'Avvia la Simulazione',
     selectLanguage: 'Seleziona Lingua',
     recordingTitle: 'Un clone vocale da soli 60 secondi di registrazione.',
     recordingInstructions: "Prima, registra un titolo parlato, ad esempio: 'Questa è una telefonata a mia nonna che festeggia il suo compleanno questo fine settimana.' Poi, fai subito finta di avere una conversazione con lei. Il nostro sistema estrarrà tutti i dati di identità e il contesto necessari dalle tue parole.",
@@ -264,7 +282,8 @@ const TRANSLATIONS: Record<Language, Translations> = {
     timeRemaining: 'Tempo Rimanente',
     safeWordPrompt: 'Stabilisci una parola di sicurezza con i tuoi cari.',
     backToHome: 'Torna alla Home',
-    aiDisclaimer: 'Questo esperimento usa la clonazione vocale IA solo a scopo educativo.',
+    aiDisclaimer:
+      'Solo a scopo educativo: Questa app utilizza un\'IA vocale avanzata per insegnare la cybersicurezza. Le registrazioni vocali vengono archiviate in modo sicuro per scopi educativi e di audit della sicurezza.',
     processingVoice: 'Elaborazione profilo vocale...',
     micPermissionTitle: 'Accesso al Microfono Richiesto',
     micPermissionDenied: 'Voicinne necessita l\'accesso al microfono. Abilitalo nelle Impostazioni.',

@@ -276,12 +276,58 @@ export default function OnboardingScreen() {
         </View>
 
         <View style={styles.idleContent}>
-          <Text style={[styles.mainTitle, { color: colors.foreground }]}>
-            {t.recordingTitle}
-          </Text>
-          <Text style={[styles.instructions, { color: colors.mutedForeground }]}>
-            {t.recordingInstructions}
-          </Text>
+          <View style={styles.idleTitleBlock}>
+            <Text style={[styles.mainTitle, { color: colors.foreground }]}>
+              {t.recordingTitle}
+            </Text>
+            <Text style={[styles.onboardingSubtitle, { color: '#9ca3af' }]}>
+              {t.onboardingSubtitle}
+            </Text>
+          </View>
+
+          <View style={styles.stepsContainer}>
+            <View style={[styles.stepRow, { backgroundColor: '#141414', borderColor: '#242424' }]}>
+              <View style={[styles.stepIconWrap, { backgroundColor: colors.primary + '22' }]}>
+                <Ionicons name="mic-outline" size={22} color={colors.primary} />
+              </View>
+              <View style={styles.stepText}>
+                <Text style={[styles.stepHeader, { color: colors.foreground }]}>
+                  {'1. ' + t.step1Header}
+                </Text>
+                <Text style={[styles.stepDesc, { color: '#d1d5db' }]}>
+                  {t.step1Desc}
+                </Text>
+              </View>
+            </View>
+
+            <View style={[styles.stepRow, { backgroundColor: '#141414', borderColor: '#242424' }]}>
+              <View style={[styles.stepIconWrap, { backgroundColor: colors.primary + '22' }]}>
+                <Ionicons name="chatbubbles-outline" size={22} color={colors.primary} />
+              </View>
+              <View style={styles.stepText}>
+                <Text style={[styles.stepHeader, { color: colors.foreground }]}>
+                  {'2. ' + t.step2Header}
+                </Text>
+                <Text style={[styles.stepDesc, { color: '#d1d5db' }]}>
+                  {t.step2Desc}
+                </Text>
+              </View>
+            </View>
+
+            <View style={[styles.stepRow, { backgroundColor: '#141414', borderColor: '#242424' }]}>
+              <View style={[styles.stepIconWrap, { backgroundColor: colors.primary + '22' }]}>
+                <Ionicons name="color-wand-outline" size={22} color={colors.primary} />
+              </View>
+              <View style={styles.stepText}>
+                <Text style={[styles.stepHeader, { color: colors.foreground }]}>
+                  {'3. ' + t.step3Header}
+                </Text>
+                <Text style={[styles.stepDesc, { color: '#d1d5db' }]}>
+                  {t.step3Desc}
+                </Text>
+              </View>
+            </View>
+          </View>
         </View>
 
         <View style={styles.bottomSection}>
@@ -425,8 +471,11 @@ const styles = StyleSheet.create({
   idleContent: {
     flex: 1,
     justifyContent: 'center',
-    gap: 20,
-    paddingVertical: 24,
+    gap: 28,
+    paddingVertical: 16,
+  },
+  idleTitleBlock: {
+    gap: 8,
   },
   mainTitle: {
     fontSize: 28,
@@ -434,10 +483,48 @@ const styles = StyleSheet.create({
     lineHeight: 36,
     letterSpacing: -0.5,
   },
+  onboardingSubtitle: {
+    fontSize: 15,
+    fontFamily: 'Inter_400Regular',
+    lineHeight: 22,
+  },
   instructions: {
     fontSize: 16,
     fontFamily: 'Inter_400Regular',
     lineHeight: 26,
+  },
+  stepsContainer: {
+    gap: 12,
+  },
+  stepRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 14,
+    borderRadius: 16,
+    borderWidth: 1,
+    padding: 18,
+  },
+  stepIconWrap: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+  },
+  stepText: {
+    flex: 1,
+    gap: 4,
+  },
+  stepHeader: {
+    fontSize: 15,
+    fontFamily: 'Inter_600SemiBold',
+    lineHeight: 22,
+  },
+  stepDesc: {
+    fontSize: 14,
+    fontFamily: 'Inter_400Regular',
+    lineHeight: 21,
   },
   bottomSection: {
     paddingBottom: 16,

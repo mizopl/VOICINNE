@@ -9,6 +9,13 @@ export interface Translations {
   selectLanguage: string;
   recordingTitle: string;
   recordingInstructions: string;
+  onboardingSubtitle: string;
+  step1Header: string;
+  step1Desc: string;
+  step2Header: string;
+  step2Desc: string;
+  step3Header: string;
+  step3Desc: string;
   startRecordingBtn: string;
   promptText: string;
   stopRecording: string;
@@ -41,6 +48,13 @@ const TRANSLATIONS: Record<Language, Translations> = {
     selectLanguage: 'Select Language',
     recordingTitle: 'A voice clone from just 60 seconds of recording.',
     recordingInstructions: "First, record a spoken title, for example: 'This is a phone call to my grandmother who is celebrating her birthday this weekend.' Then, immediately pretend you are having a conversation with her. Our system will extract all the necessary identity data and context from your words.",
+    onboardingSubtitle: 'Three simple steps. Sixty seconds. Maximum impact.',
+    step1Header: 'Set the Scene',
+    step1Desc: 'Start by saying aloud who you want the AI to call — e.g. "This is a call to my grandma whose birthday is tomorrow."',
+    step2Header: 'Play the Part',
+    step2Desc: 'Immediately start your fake conversation. Talk naturally as if they just picked up the phone.',
+    step3Header: 'We Do the Rest',
+    step3Desc: 'Our system clones your voice and builds a full conversational persona from your recording.',
     startRecordingBtn: 'Start Recording (60s)',
     promptText: 'Hello? Who is calling?',
     stopRecording: 'Stop',
@@ -72,6 +86,13 @@ const TRANSLATIONS: Record<Language, Translations> = {
     selectLanguage: 'Wybierz Język',
     recordingTitle: 'Klon głosu z zaledwie 60 sekund nagrania.',
     recordingInstructions: "Najpierw nagraj tytuł mówiony, na przykład: 'To jest rozmowa telefoniczna do mojej babci, która obchodzi swoje urodziny w ten weekend.' Następnie natychmiast udawaj, że rozmawiasz z nią. Nasz system wyodrębni wszystkie niezbędne dane tożsamości i kontekst z Twoich słów.",
+    onboardingSubtitle: 'Trzy proste kroki. Sześćdziesiąt sekund. Maksymalny efekt.',
+    step1Header: 'Ustaw scenę',
+    step1Desc: 'Powiedz głośno, do kogo AI ma zadzwonić — np. „To rozmowa telefoniczna do mojej babci, która jutro obchodzi urodziny."',
+    step2Header: 'Zagraj swoją rolę',
+    step2Desc: 'Od razu zacznij fikcyjną rozmowę. Mów naturalnie, jakby ta osoba właśnie odebrała telefon.',
+    step3Header: 'Resztą zajmiemy się my',
+    step3Desc: 'Nasz system sklonuje Twój głos i zbuduje pełną personę konwersacyjną na podstawie nagrania.',
     startRecordingBtn: 'Rozpocznij nagrywanie (60s)',
     promptText: 'Halo? Kto mówi?',
     stopRecording: 'Zatrzymaj',
@@ -103,6 +124,13 @@ const TRANSLATIONS: Record<Language, Translations> = {
     selectLanguage: 'Seleccionar Idioma',
     recordingTitle: 'Un clon de voz en tan solo 60 segundos de grabación.',
     recordingInstructions: "Primero, graba un título hablado, por ejemplo: 'Esta es una llamada telefónica a mi abuela que celebra su cumpleaños este fin de semana.' Luego, imagina inmediatamente que estás hablando con ella. Nuestro sistema extraerá todos los datos de identidad y el contexto necesarios de tus palabras.",
+    onboardingSubtitle: 'Tres pasos simples. Sesenta segundos. Máximo impacto.',
+    step1Header: 'Prepara la escena',
+    step1Desc: 'Di en voz alta a quién quieres que llame la IA — p. ej. "Esta es una llamada a mi abuela cuyo cumpleaños es mañana."',
+    step2Header: 'Interpreta tu papel',
+    step2Desc: 'Empieza inmediatamente la conversación fingida. Habla con naturalidad como si acabaran de contestar.',
+    step3Header: 'Nosotros hacemos el resto',
+    step3Desc: 'Nuestro sistema clonará tu voz y construirá una persona conversacional completa a partir de tu grabación.',
     startRecordingBtn: 'Iniciar grabación (60s)',
     promptText: '¿Hola? ¿Quién llama?',
     stopRecording: 'Detener',
@@ -134,6 +162,13 @@ const TRANSLATIONS: Record<Language, Translations> = {
     selectLanguage: 'Sprache Wählen',
     recordingTitle: 'Ein Stimmklon aus nur 60 Sekunden Aufnahme.',
     recordingInstructions: "Beginne mit einem gesprochenen Titel, zum Beispiel: 'Das ist ein Telefonanruf an meine Oma, die dieses Wochenende Geburtstag feiert.' Dann spiel sofort eine Unterhaltung mit ihr nach. Unser System extrahiert alle nötigen Identitätsdaten und Kontext aus deinen Worten.",
+    onboardingSubtitle: 'Drei einfache Schritte. Sechzig Sekunden. Maximale Wirkung.',
+    step1Header: 'Die Szene setzen',
+    step1Desc: 'Sag laut, wen die KI anrufen soll — z. B. „Das ist ein Anruf bei meiner Oma, die morgen Geburtstag hat."',
+    step2Header: 'Die Rolle spielen',
+    step2Desc: 'Beginne sofort dein Fiktivgespräch. Rede natürlich, als hättest du gerade jemanden erreicht.',
+    step3Header: 'Den Rest erledigen wir',
+    step3Desc: 'Unser System klont deine Stimme und erstellt aus der Aufnahme ein vollständiges Gesprächsprofil.',
     startRecordingBtn: 'Aufnahme starten (60s)',
     promptText: 'Hallo? Wer spricht da?',
     stopRecording: 'Stoppen',
@@ -165,6 +200,13 @@ const TRANSLATIONS: Record<Language, Translations> = {
     selectLanguage: 'Choisir la Langue',
     recordingTitle: 'Un clone vocal en seulement 60 secondes d\'enregistrement.',
     recordingInstructions: "Commencez par enregistrer un titre parlé, par exemple : 'C'est un appel téléphonique à ma grand-mère qui fête son anniversaire ce week-end.' Puis, faites immédiatement semblant d'avoir une conversation avec elle. Notre système extraira toutes les données d'identité et le contexte nécessaires de vos mots.",
+    onboardingSubtitle: 'Trois étapes simples. Soixante secondes. Impact maximal.',
+    step1Header: 'Plantez le décor',
+    step1Desc: 'Dites à voix haute qui vous voulez que l\'IA appelle — ex. « C\'est un appel à ma grand-mère dont l\'anniversaire est demain. »',
+    step2Header: 'Jouez le jeu',
+    step2Desc: 'Commencez immédiatement votre fausse conversation. Parlez naturellement comme si la personne venait de décrocher.',
+    step3Header: 'On s\'occupe du reste',
+    step3Desc: 'Notre système clone votre voix et construit un profil conversationnel complet à partir de votre enregistrement.',
     startRecordingBtn: 'Démarrer l\'enregistrement (60s)',
     promptText: 'Allô ? Qui est à l\'appareil ?',
     stopRecording: 'Arrêter',
@@ -196,6 +238,13 @@ const TRANSLATIONS: Record<Language, Translations> = {
     selectLanguage: 'Seleziona Lingua',
     recordingTitle: 'Un clone vocale da soli 60 secondi di registrazione.',
     recordingInstructions: "Prima, registra un titolo parlato, ad esempio: 'Questa è una telefonata a mia nonna che festeggia il suo compleanno questo fine settimana.' Poi, fai subito finta di avere una conversazione con lei. Il nostro sistema estrarrà tutti i dati di identità e il contesto necessari dalle tue parole.",
+    onboardingSubtitle: 'Tre semplici passi. Sessanta secondi. Impatto massimo.',
+    step1Header: 'Prepara la scena',
+    step1Desc: 'Di\' ad alta voce chi vuoi che l\'IA chiami — es. "Questa è una chiamata a mia nonna, il cui compleanno è domani."',
+    step2Header: 'Recita la parte',
+    step2Desc: 'Inizia subito la tua conversazione fittizia. Parla in modo naturale come se l\'altro avesse appena risposto.',
+    step3Header: 'Al resto pensiamo noi',
+    step3Desc: 'Il nostro sistema clonerà la tua voce e costruirà un profilo conversazionale completo dalla tua registrazione.',
     startRecordingBtn: 'Inizia registrazione (60s)',
     promptText: 'Pronto? Chi parla?',
     stopRecording: 'Ferma',

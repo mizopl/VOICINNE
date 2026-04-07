@@ -1,0 +1,24 @@
+Please refine the UI and logic in `app/onboarding.tsx` to explicitly guide the user through the 60-second Solo Roleplay Recording.
+
+**1. ONBOARDING SCREEN UI (Instructions):**
+- Display a prominent title: "A voice clone from just 60 seconds of recording."
+- Display the instructions: "First, record a spoken title, for example: 'This is a phone call to my grandmother who is celebrating her birthday this weekend.' Then, immediately pretend you are having a conversation with her. Our system will extract all the necessary identity data and context from your words."
+- Provide a large "Start Recording (60s)" button.
+
+**2. RECORDING STATE (The 60-Second Timer):**
+- When the user presses the button, start the `expo-av` audio recording.
+- Display a prominent, actively updating 60-second countdown timer on the screen so the user knows exactly how much time is left.
+
+**3. DYNAMIC TEXT POP-UP (At 30 Seconds):**
+- Implement a `useEffect` hook or a timer check. Exactly when the countdown reaches 30 seconds left (i.e., halfway through the recording), dynamically pop up a large, highlighted text on the screen: 
+  **"Hello? Who is calling?"**
+- (This UI psychological trigger is crucial. It will force the user to naturally respond to the screen with their name/nickname during their monologue to provide vital identity data for our LLM).
+
+**4. COMPLETION & PREVIEW STATE:**
+- When the 60 seconds are up (or if the user presses the 'Stop' button earlier), stop the `expo-av` recording.
+- Transition the UI to a "Preview State". 
+- Display an audio player component that allows the user to play back and listen to their recording to ensure it sounds right.
+- Provide two choices (buttons): "Re-record" (discards audio and goes back to step 1) and "Send for Voice Cloning".
+
+**5. PIPELINE SUBMISSION:**
+- When the user clicks "Send for Voice Cloning", send this single audio file via FormData as a Buffer/Blob to the backend. We will extract both the voice profile for cloning and the conversational context for the persona generation from this single powerful file.

@@ -18,9 +18,7 @@ import { useColors } from '@/hooks/useColors';
 
 import {
   ConversationProvider,
-  useConversationControls,
-  useConversationMode,
-  useConversationStatus,
+  useConversation,
 } from '@elevenlabs/react-native';
 
 const DURATION_SECONDS = 3 * 60;
@@ -57,9 +55,7 @@ function SimulationContent({
 
   const displayRevealMessage = revealMessageParam.trim() || t.revealMessage;
 
-  const { startSession, endSession } = useConversationControls();
-  const { status } = useConversationStatus();
-  const { isSpeaking } = useConversationMode();
+  const { startSession, endSession, status, isSpeaking } = useConversation();
 
   const revealAnim = useRef(new Animated.Value(0)).current;
   const pulseAnim = useRef(new Animated.Value(1)).current;

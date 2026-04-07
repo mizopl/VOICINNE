@@ -79,26 +79,26 @@ router.post("/create-agent", async (req, res) => {
             text_normalisation_type: "elevenlabs",
           },
           agent: {
+            first_message: first_message || undefined,
+            language: resolvedLang,
             prompt: {
               prompt: system_prompt,
               llm: "gemini-2.5-flash",
               temperature: 1.0,
-            },
-            first_message: first_message || undefined,
-            language: resolvedLang,
-            tools: [
-              {
-                type: "system",
-                name: "end_call",
-                description: "End a conversation after the reveal of the AI persona.",
-                response_timeout_secs: 20,
-                disable_interruptions: true,
-                force_pre_tool_speech: false,
-                params: {
-                  system_tool_type: "end_call",
+              tools: [
+                {
+                  type: "system",
+                  name: "end_call",
+                  description: "End a conversation after the reveal of the AI persona.",
+                  response_timeout_secs: 20,
+                  disable_interruptions: true,
+                  force_pre_tool_speech: false,
+                  params: {
+                    system_tool_type: "end_call",
+                  },
                 },
-              },
-            ],
+              ],
+            },
           },
         },
         platform_settings: {

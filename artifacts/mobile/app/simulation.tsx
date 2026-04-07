@@ -19,10 +19,13 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Conversation } from '@elevenlabs/react';
 
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useColors } from '@/hooks/useColors';
 import { WaveformLine, buildFlatPoints } from '@/utils/waveform';
 
 const RED = '#ef4444';
+const CARD = '#141414';
+const BORDER = '#262626';
+const FG = '#f0f0f0';
+const MUTED = '#9ca3af';
 const DURATION_SECONDS = 3 * 60;
 const TEST_AGENT_ID = 'agent_9801knkb7cbtfpk8pvfe3stexj99';
 const W = Dimensions.get('window').width;
@@ -49,7 +52,6 @@ function SimulationContent({
   agentId: string;
   revealMessageParam: string;
 }) {
-  const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { t } = useLanguage();
@@ -331,7 +333,7 @@ function SimulationContent({
     <View
       style={[
         styles.container,
-        { backgroundColor: colors.background, paddingTop: topPad, paddingBottom: bottomPad },
+        { backgroundColor: '#0a0a0a', paddingTop: topPad, paddingBottom: bottomPad },
       ]}
     >
       {/* Top bar */}
@@ -344,18 +346,18 @@ function SimulationContent({
           testID="back-button"
           hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
         >
-          <Ionicons name="chevron-back" size={28} color={colors.mutedForeground} />
+          <Ionicons name="chevron-back" size={28} color={MUTED} />
         </TouchableOpacity>
-        <Text style={[styles.topTitle, { color: colors.foreground }]}>{t.simulationTitle}</Text>
+        <Text style={[styles.topTitle, { color: FG }]}>{t.simulationTitle}</Text>
         <View style={{ width: 28 }} />
       </View>
 
       {/* ── CENTER SECTION ── */}
       <View style={styles.centerSection}>
         {/* Caller name chip */}
-        <View style={[styles.callerChip, { backgroundColor: colors.card, borderColor: colors.border }]}>
+        <View style={[styles.callerChip, { backgroundColor: CARD, borderColor: BORDER }]}>
           <View style={[styles.callerDot, { backgroundColor: isActive ? RED : '#555' }]} />
-          <Text style={[styles.callerName, { color: colors.foreground }]}>Voicinne Agent</Text>
+          <Text style={[styles.callerName, { color: FG }]}>Voicinne Agent</Text>
         </View>
 
         {/* Orb + ripple rings */}
@@ -396,8 +398,8 @@ function SimulationContent({
             style={[
               styles.orb,
               {
-                backgroundColor: isActive ? RED + '22' : colors.card,
-                borderColor: isActive ? RED : colors.border,
+                backgroundColor: isActive ? RED + '22' : CARD,
+                borderColor: isActive ? RED : BORDER,
                 transform: [{ scale: orbScaleAnim }],
               },
             ]}
@@ -405,7 +407,7 @@ function SimulationContent({
             <View
               style={[
                 styles.orbInner,
-                { backgroundColor: isActive ? RED + '33' : colors.border + '55' },
+                { backgroundColor: isActive ? RED + '33' : BORDER + '55' },
               ]}
             >
               <Ionicons
@@ -419,14 +421,14 @@ function SimulationContent({
                         : 'mic-outline'
                 }
                 size={44}
-                color={isActive ? RED : colors.mutedForeground}
+                color={isActive ? RED : MUTED}
               />
             </View>
           </Animated.View>
         </View>
 
         {/* Status text */}
-        <Text style={[styles.statusLabel, { color: isActive ? RED : colors.mutedForeground }]}>
+        <Text style={[styles.statusLabel, { color: isActive ? RED : MUTED }]}>
           {statusLabel}
         </Text>
 
@@ -435,7 +437,7 @@ function SimulationContent({
           <Text
             style={[
               styles.timerText,
-              { color: isLow ? RED : timerActive ? colors.foreground : colors.mutedForeground },
+              { color: isLow ? RED : timerActive ? FG : MUTED },
             ]}
           >
             {timeString}
@@ -443,7 +445,7 @@ function SimulationContent({
           <Text
             style={[
               styles.timerSub,
-              { color: isLow ? RED + '88' : colors.mutedForeground },
+              { color: isLow ? RED + '88' : MUTED },
             ]}
           >
             {timerActive ? 'TIME REMAINING' : 'DURATION'}
@@ -451,7 +453,7 @@ function SimulationContent({
         </View>
 
         {/* Progress bar */}
-        <View style={[styles.progressBg, { backgroundColor: colors.border }]}>
+        <View style={[styles.progressBg, { backgroundColor: BORDER }]}>
           <View
             style={[
               styles.progressFill,
@@ -486,9 +488,9 @@ function SimulationContent({
           <View style={styles.activeControls}>
             <View style={styles.activeControlsRow}>
               {/* Mic live indicator */}
-              <View style={[styles.controlPill, { backgroundColor: colors.card, borderColor: colors.border }]}>
+              <View style={[styles.controlPill, { backgroundColor: CARD, borderColor: BORDER }]}>
                 <Ionicons name="mic-outline" size={20} color={RED} />
-                <Text style={[styles.controlPillText, { color: colors.foreground }]}>Live</Text>
+                <Text style={[styles.controlPillText, { color: FG }]}>Live</Text>
               </View>
 
               {/* End call */}
@@ -502,12 +504,12 @@ function SimulationContent({
               </TouchableOpacity>
 
               {/* Timer status pill */}
-              <View style={[styles.controlPill, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                <Ionicons name="timer-outline" size={20} color={isLow ? RED : RED} />
+              <View style={[styles.controlPill, { backgroundColor: CARD, borderColor: BORDER }]}>
+                <Ionicons name="timer-outline" size={20} color={RED} />
                 <Text
                   style={[
                     styles.controlPillText,
-                    { color: isLow ? RED : colors.foreground },
+                    { color: isLow ? RED : FG },
                   ]}
                 >
                   {timeString}

@@ -373,6 +373,11 @@ export default function OnboardingScreen() {
           </TouchableOpacity>
         </View>
 
+        {/* Flat waveform — idle state visual */}
+        <View style={styles.idleWaveContainer}>
+          <WaveformLine points={buildFlatPoints(W, WAVE_H)} color={RED} width={W} height={WAVE_H} />
+        </View>
+
         <View style={styles.idleContent}>
           <View style={styles.idleTitleBlock}>
             <Text style={styles.mainTitle}>
@@ -587,6 +592,12 @@ const styles = StyleSheet.create({
   },
   backBtn: {
     padding: 4,
+  },
+  idleWaveContainer: {
+    width: W,
+    height: WAVE_H,
+    marginLeft: -24,
+    marginBottom: 8,
   },
   idleContent: {
     flex: 1,

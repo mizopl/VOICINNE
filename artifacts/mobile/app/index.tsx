@@ -27,6 +27,10 @@ const LANGUAGES: Language[] = ['ENG', 'POL', 'SPA', 'GER', 'FRA', 'ITA'];
 
 const RED = '#ef4444';
 const RED_DIM = '#7f1d1d';
+const CARD = '#141414';
+const BORDER = '#262626';
+const FG = '#f0f0f0';
+const MUTED = '#9ca3af';
 
 const SCAMS = [
   { label: 'Fake Kidnapping', desc: "Scammers clone a child's voice to call parents demanding ransom — from a 15-second clip." },
@@ -158,7 +162,7 @@ export default function HomeScreen() {
   /* ── Render ──────────────────────────────────────────────────── */
   return (
     <ScrollView
-      style={[styles.root, { backgroundColor: colors.background }]}
+      style={[styles.root, { backgroundColor: '#0a0a0a' }]}
       contentContainerStyle={[styles.content, { paddingTop: topPad, paddingBottom: bottomPad + 8 }]}
       showsVerticalScrollIndicator={false}
     >
@@ -169,18 +173,18 @@ export default function HomeScreen() {
 
       {/* ── Header ──────────────────────────────────────────────── */}
       <View style={styles.header}>
-        <Text style={[styles.wordmark, { color: colors.foreground }]}>VOICINNE</Text>
+        <Text style={[styles.wordmark, { color: FG }]}>VOICINNE</Text>
         <TouchableOpacity
-          style={[styles.langBtn, { backgroundColor: colors.card, borderColor: colors.border }]}
+          style={[styles.langBtn, { backgroundColor: CARD, borderColor: BORDER }]}
           onPress={() => setShowLangPicker(true)}
           activeOpacity={0.75}
           testID="language-selector-button"
         >
-          <Ionicons name="globe-outline" size={15} color={colors.mutedForeground} />
-          <Text style={[styles.langBtnText, { color: colors.mutedForeground }]}>
+          <Ionicons name="globe-outline" size={15} color={MUTED} />
+          <Text style={[styles.langBtnText, { color: MUTED }]}>
             {LANGUAGE_LABELS[language]}
           </Text>
-          <Ionicons name="chevron-down" size={13} color={colors.mutedForeground} />
+          <Ionicons name="chevron-down" size={13} color={MUTED} />
         </TouchableOpacity>
       </View>
 
@@ -191,13 +195,13 @@ export default function HomeScreen() {
         <TouchableOpacity
           style={[
             styles.micBtn,
-            micActive ? { backgroundColor: RED } : { backgroundColor: colors.card, borderColor: colors.border, borderWidth: 1 },
+            micActive ? { backgroundColor: RED } : { backgroundColor: CARD, borderColor: BORDER, borderWidth: 1 },
           ]}
           onPress={toggleMic}
           activeOpacity={0.8}
           testID="mic-toggle-button"
         >
-          <Ionicons name={micActive ? 'mic' : 'mic-outline'} size={15} color={micActive ? '#fff' : colors.mutedForeground} />
+          <Ionicons name={micActive ? 'mic' : 'mic-outline'} size={15} color={micActive ? '#fff' : MUTED} />
         </TouchableOpacity>
         {micDenied && (
           <Text style={styles.micDenied}>Mic access denied</Text>
@@ -210,26 +214,26 @@ export default function HomeScreen() {
           <Text style={styles.statNum}>15</Text>
           <Text style={styles.statUnit}>s</Text>
         </View>
-        <Text style={[styles.slogan, { color: colors.foreground }]}>
+        <Text style={[styles.slogan, { color: FG }]}>
           That's all AI needs to clone your voice.
         </Text>
       </View>
 
       {/* ── Explanation ──────────────────────────────────────────── */}
-      <Text style={[styles.explanation, { color: colors.mutedForeground }]}>
+      <Text style={[styles.explanation, { color: MUTED }]}>
         We'll clone your voice from a 60-second recording, then use it to call one of
         your closest ones — so they hear, firsthand, how convincingly AI can impersonate
         someone they trust.
       </Text>
 
       {/* ── Scam Ticker ──────────────────────────────────────────── */}
-      <View style={[styles.tickerCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+      <View style={[styles.tickerCard, { backgroundColor: CARD, borderColor: BORDER }]}>
         <Animated.View style={{ opacity: fadeAnim }}>
           <View style={styles.tickerLabelRow}>
             <View style={styles.tickerDot} />
             <Text style={styles.tickerLabel}>{scam.label}</Text>
           </View>
-          <Text style={[styles.tickerDesc, { color: colors.mutedForeground }]}>
+          <Text style={[styles.tickerDesc, { color: MUTED }]}>
             {scam.desc}
           </Text>
         </Animated.View>
@@ -250,7 +254,7 @@ export default function HomeScreen() {
             }}
             hitSlop={{ top: 8, bottom: 8, left: 4, right: 4 }}
           >
-            <View style={[styles.dot, i === scamIdx ? styles.dotActive : { backgroundColor: colors.border }]} />
+            <View style={[styles.dot, i === scamIdx ? styles.dotActive : { backgroundColor: BORDER }]} />
           </TouchableOpacity>
         ))}
       </View>
@@ -266,19 +270,19 @@ export default function HomeScreen() {
       </TouchableOpacity>
 
       {/* Consent */}
-      <Text style={[styles.consent, { color: colors.mutedForeground }]}>
+      <Text style={[styles.consent, { color: MUTED }]}>
         By continuing you consent to record a 60s voice sample.{'\n'}Audio is never stored or shared beyond this session.
       </Text>
 
       {/* Dev — test simulation shortcut */}
       <TouchableOpacity
-        style={[styles.testBtn, { borderColor: colors.border }]}
+        style={[styles.testBtn, { borderColor: BORDER }]}
         onPress={handleTestSimulation}
         activeOpacity={0.7}
         testID="test-simulation-button"
       >
-        <Ionicons name="flask-outline" size={16} color={colors.mutedForeground} style={{ marginRight: 6 }} />
-        <Text style={[styles.testBtnText, { color: colors.mutedForeground }]}>
+        <Ionicons name="flask-outline" size={16} color={MUTED} style={{ marginRight: 6 }} />
+        <Text style={[styles.testBtnText, { color: MUTED }]}>
           Test Simulation (skip onboarding)
         </Text>
       </TouchableOpacity>
@@ -291,15 +295,15 @@ export default function HomeScreen() {
         onRequestClose={() => setShowLangPicker(false)}
       >
         <Pressable style={styles.modalOverlay} onPress={() => setShowLangPicker(false)}>
-          <Pressable style={[styles.modalSheet, { backgroundColor: colors.card }]}>
-            <Text style={[styles.modalTitle, { color: colors.foreground }]}>{t.selectLanguage}</Text>
+          <Pressable style={[styles.modalSheet, { backgroundColor: CARD }]}>
+            <Text style={[styles.modalTitle, { color: FG }]}>{t.selectLanguage}</Text>
             <ScrollView>
               {LANGUAGES.map((lang) => (
                 <TouchableOpacity
                   key={lang}
                   style={[
                     styles.langOption,
-                    { borderBottomColor: colors.border },
+                    { borderBottomColor: BORDER },
                     lang === language && { backgroundColor: RED + '22' },
                   ]}
                   onPress={() => handleSelectLanguage(lang)}
@@ -307,7 +311,7 @@ export default function HomeScreen() {
                 >
                   <Text style={[
                     styles.langOptionText,
-                    { color: colors.foreground },
+                    { color: FG },
                     lang === language && { color: RED, fontFamily: 'Inter_600SemiBold' },
                   ]}>
                     {LANGUAGE_LABELS[lang]}

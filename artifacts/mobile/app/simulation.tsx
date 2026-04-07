@@ -82,8 +82,8 @@ function SimulationContent({
       setCallStarted(false);
       setConnectError(
         Platform.OS === 'web'
-          ? 'Mic blocked in embedded preview. Open the app URL directly in a browser tab, or use a physical device.'
-          : 'Connection failed. Make sure microphone permission is granted and try again.'
+          ? 'Mic blocked in embedded preview. Open the app URL directly in a browser tab to test the call.'
+          : 'Live call requires an EAS development build — Expo Go is missing the native audio module. Build with: eas build --profile development'
       );
     }
   }, [status]);

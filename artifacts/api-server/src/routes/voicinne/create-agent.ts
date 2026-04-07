@@ -55,11 +55,18 @@ router.post("/create-agent", async (req, res) => {
         name: `voicinne_agent_${voice_id}`,
         conversation_config: {
           turn: {
-            turn_timeout: 2.0,
+            turn_timeout: 1.0,
             mode: "turn",
             turn_eagerness: "eager",
             spelling_patience: "off",
             speculative_turn: true,
+          },
+          conversation: {
+            max_duration_seconds: 180,
+            file_input: {
+              enabled: false,
+              max_files_per_conversation: 1,
+            },
           },
           tts: {
             model_id: "eleven_v3_conversational",
@@ -79,6 +86,19 @@ router.post("/create-agent", async (req, res) => {
             },
             first_message: first_message || undefined,
             language: resolvedLang,
+            tools: [
+              {
+                type: "system",
+                name: "end_call",
+                description: "End a conversation after the reveal of the AI persona.",
+                response_timeout_secs: 20,
+                disable_interruptions: true,
+                force_pre_tool_speech: false,
+                params: {
+                  system_tool_type: "end_call",
+                },
+              },
+            ],
           },
         },
         platform_settings: {

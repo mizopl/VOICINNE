@@ -6,7 +6,6 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
 import {
   Animated,
-  Linking,
   Platform,
   ScrollView,
   StyleSheet,
@@ -19,14 +18,39 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useColors } from '@/hooks/useColors';
 
-import {
-  ConversationProvider,
-  useConversation,
-} from '@elevenlabs/react';
-
 const DURATION_SECONDS = 3 * 60;
-
 const TEST_AGENT_ID = 'agent_9801knkb7cbtfpk8pvfe3stexj99';
+
+/**
+ * Injects the ElevenLabs ConvAI web-component widget into the document body.
+ * The widget renders its own floating button UI and handles mic + audio internally.
+ * Only active on web — native requires an EAS dev build with native audio modules.
+ */
+function useConvaiWidget(agentId: string) {
+  useEffect(() => {
+    if (Platform.OS !== 'web' || !agentId) return;
+
+    const SCRIPT_ID = 'el-convai-widget-script';
+    if (!document.getElementById(SCRIPT_ID)) {
+      const s = document.createElement('script');
+      s.id = SCRIPT_ID;
+      s.src = 'https://unpkg.com/@elevenlabs/convai-widget-embed';
+      s.async = true;
+      s.type = 'text/javascript';
+      document.body.appendChild(s);
+    }
+
+    document.querySelectorAll('elevenlabs-convai').forEach((el) => el.remove());
+
+    const widget = document.createElement('elevenlabs-convai');
+    widget.setAttribute('agent-id', agentId);
+    document.body.appendChild(widget);
+
+    return () => {
+      widget.remove();
+    };
+  }, [agentId]);
+}
 
 export default function SimulationScreen() {
   const { agentId, revealMessage } = useLocalSearchParams<{
@@ -36,11 +60,7 @@ export default function SimulationScreen() {
 
   const resolvedAgentId = agentId?.trim() || TEST_AGENT_ID;
 
-  return (
-    <ConversationProvider>
-      <SimulationContent agentId={resolvedAgentId} revealMessageParam={revealMessage ?? ''} />
-    </ConversationProvider>
-  );
+  return <SimulationContent agentId={resolvedAgentId} revealMessageParam={revealMessage ?? ''} />;
 }
 
 function SimulationContent({
@@ -58,48 +78,16 @@ function SimulationContent({
   const [secondsLeft, setSecondsLeft] = useState(DURATION_SECONDS);
   const [revealed, setRevealed] = useState(false);
   const [timerActive, setTimerActive] = useState(false);
-  const [callStarted, setCallStarted] = useState(false);
-  const [connectError, setConnectError] = useState<string | null>(null);
 
   const displayRevealMessage = revealMessageParam.trim() || t.revealMessage;
 
-  const { startSession, endSession, status, isSpeaking } = useConversation({
-    onError: (error: unknown) => {
-      const msg = error instanceof Error ? error.message : String(error);
-      setConnectError(msg);
-      setCallStarted(false);
-    },
-  });
-
-  // Detect "connecting → disconnected" transition: this is how the SDK signals
-  // a failed connection attempt (e.g. mic blocked, network error). The SDK does
-  // NOT call onError for this — it only re-throws the promise, which the provider
-  // swallows. Watching the status transition is the only reliable way to catch it.
-  const prevStatusRef = useRef(status);
-  useEffect(() => {
-    const prev = prevStatusRef.current;
-    prevStatusRef.current = status;
-    if (prev === 'connecting' && status === 'disconnected') {
-      setCallStarted(false);
-      setConnectError(
-        Platform.OS === 'web'
-          ? 'Microphone is blocked inside this embedded preview.'
-          : 'Live call requires an EAS development build — Expo Go is missing the native audio module.'
-      );
-    }
-  }, [status]);
+  useConvaiWidget(agentId);
 
   const revealAnim = useRef(new Animated.Value(0)).current;
   const pulseAnim = useRef(new Animated.Value(1)).current;
-  const bar1Anim = useRef(new Animated.Value(0.3)).current;
-  const bar2Anim = useRef(new Animated.Value(0.3)).current;
-  const bar3Anim = useRef(new Animated.Value(0.3)).current;
 
   const topPad = Platform.OS === 'web' ? 67 : insets.top;
   const bottomPad = Platform.OS === 'web' ? 34 : insets.bottom;
-
-  const isConnected = status === 'connected';
-  const isConnecting = status === 'connecting';
 
   useEffect(() => {
     const loop = Animated.loop(
@@ -111,38 +99,6 @@ function SimulationContent({
     loop.start();
     return () => loop.stop();
   }, []);
-
-  useEffect(() => {
-    if (!isSpeaking) {
-      Animated.parallel([
-        Animated.timing(bar1Anim, { toValue: 0.3, duration: 200, useNativeDriver: true }),
-        Animated.timing(bar2Anim, { toValue: 0.3, duration: 200, useNativeDriver: true }),
-        Animated.timing(bar3Anim, { toValue: 0.3, duration: 200, useNativeDriver: true }),
-      ]).start();
-      return;
-    }
-    const animateBar = (bar: Animated.Value, delay: number) =>
-      Animated.loop(
-        Animated.sequence([
-          Animated.delay(delay),
-          Animated.timing(bar, { toValue: 1, duration: 300, useNativeDriver: true }),
-          Animated.timing(bar, { toValue: 0.2, duration: 300, useNativeDriver: true }),
-        ])
-      );
-    const loops = [
-      animateBar(bar1Anim, 0),
-      animateBar(bar2Anim, 150),
-      animateBar(bar3Anim, 300),
-    ];
-    loops.forEach((l) => l.start());
-    return () => loops.forEach((l) => l.stop());
-  }, [isSpeaking]);
-
-  useEffect(() => {
-    if (isConnected && !timerActive && !revealed) {
-      setTimerActive(true);
-    }
-  }, [isConnected]);
 
   useEffect(() => {
     if (!timerActive || secondsLeft <= 0) {
@@ -165,11 +121,6 @@ function SimulationContent({
 
   const handleReveal = () => {
     if (revealed) return;
-    // endSession() returns void (not a Promise), so calling it synchronously
-    // before state update is the correct sequencing per @elevenlabs/react types.
-    if (isConnected || isConnecting) {
-      endSession();
-    }
     setRevealed(true);
     setTimerActive(false);
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
@@ -181,24 +132,14 @@ function SimulationContent({
     }).start();
   };
 
-  const handleConnect = () => {
-    if (!agentId) return;
-    setConnectError(null);
-    setCallStarted(true);
+  const handleStartTimer = () => {
+    setTimerActive(true);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    startSession({ agentId });
-  };
-
-  const handleEndCall = () => {
-    endSession();
-    setCallStarted(false);
-    setTimerActive(false);
   };
 
   const minutes = Math.floor(secondsLeft / 60);
   const secs = secondsLeft % 60;
   const timeString = `${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-
   const progressFraction = (DURATION_SECONDS - secondsLeft) / DURATION_SECONDS;
 
   const revealScale = revealAnim.interpolate({
@@ -259,7 +200,7 @@ function SimulationContent({
       ]}
     >
       <View style={styles.topBar}>
-        <TouchableOpacity onPress={() => { handleEndCall(); router.back(); }} testID="back-button">
+        <TouchableOpacity onPress={() => router.back()} testID="back-button">
           <Ionicons name="chevron-back" size={28} color={colors.mutedForeground} />
         </TouchableOpacity>
         <Text style={[styles.topTitle, { color: colors.foreground }]}>{t.simulationTitle}</Text>
@@ -286,33 +227,10 @@ function SimulationContent({
           >
             {timeString}
           </Text>
-
-          {isConnected && (
-            <View style={styles.speakingIndicator}>
-              {[bar1Anim, bar2Anim, bar3Anim].map((bar, i) => (
-                <Animated.View
-                  key={i}
-                  style={[
-                    styles.bar,
-                    {
-                      backgroundColor: isSpeaking ? colors.primary : colors.mutedForeground,
-                      transform: [{ scaleY: bar }],
-                    },
-                  ]}
-                />
-              ))}
-            </View>
-          )}
         </Animated.View>
 
         <Text style={[styles.statusText, { color: colors.mutedForeground }]}>
-          {isConnecting
-            ? 'Connecting…'
-            : isConnected
-            ? isSpeaking
-              ? 'AI is speaking'
-              : 'Listening…'
-            : t.simulationSubtitle}
+          {timerActive ? t.simulationSubtitle : t.simulationInfo}
         </Text>
       </View>
 
@@ -332,79 +250,41 @@ function SimulationContent({
       </View>
 
       <View style={styles.bottomSection}>
-        <View style={[styles.infoBox, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <Ionicons name="information-circle-outline" size={20} color={colors.mutedForeground} style={{ marginRight: 8, marginTop: 2 }} />
-          <Text style={[styles.infoText, { color: colors.mutedForeground }]}>
-            {t.simulationInfo}
+        <View style={[styles.hintBox, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <Ionicons
+            name={Platform.OS === 'web' ? 'chatbubble-ellipses-outline' : 'construct-outline'}
+            size={20}
+            color={colors.mutedForeground}
+            style={{ marginRight: 8, marginTop: 2 }}
+          />
+          <Text style={[styles.hintText, { color: colors.mutedForeground }]}>
+            {Platform.OS === 'web'
+              ? 'Tap the voice button in the bottom-right corner to start the AI call, then press Start Timer below.'
+              : 'Live call requires an EAS development build with native audio modules.'}
           </Text>
         </View>
 
-        {connectError ? (
-          <View style={styles.errorBanner}>
-            <Ionicons name="alert-circle-outline" size={18} color="#ef4444" style={{ marginRight: 8, marginTop: 2 }} />
-            <View style={{ flex: 1, gap: 8 }}>
-              <Text style={styles.errorBannerText}>{connectError}</Text>
-              {Platform.OS === 'web' && (
-                <TouchableOpacity
-                  onPress={() => {
-                    window.open(window.location.href, '_blank');
-                  }}
-                  style={styles.openTabButton}
-                >
-                  <Ionicons name="open-outline" size={14} color="#ffffff" style={{ marginRight: 6 }} />
-                  <Text style={styles.openTabButtonText}>Open in New Tab</Text>
-                </TouchableOpacity>
-              )}
-            </View>
-          </View>
+        {!timerActive ? (
+          <TouchableOpacity
+            style={[styles.callButton, { backgroundColor: colors.primary }]}
+            onPress={handleStartTimer}
+            activeOpacity={0.85}
+            testID="start-timer-button"
+          >
+            <Ionicons name="timer-outline" size={24} color="#ffffff" style={{ marginRight: 10 }} />
+            <Text style={styles.callButtonText}>Start Timer</Text>
+          </TouchableOpacity>
         ) : null}
 
-        {!callStarted ? (
-          <TouchableOpacity
-            style={[styles.callButton, { backgroundColor: colors.primary, opacity: agentId ? 1 : 0.5 }]}
-            onPress={handleConnect}
-            activeOpacity={0.85}
-            disabled={!agentId}
-            testID="connect-call-button"
-          >
-            <Ionicons name="call" size={24} color="#ffffff" style={{ marginRight: 10 }} />
-            <Text style={styles.callButtonText}>Connect Call</Text>
-          </TouchableOpacity>
-        ) : (
-          <View style={styles.callActiveRow}>
-            <TouchableOpacity
-              style={[styles.endCallButton, { backgroundColor: '#ef4444' }]}
-              onPress={handleEndCall}
-              activeOpacity={0.85}
-              testID="end-call-button"
-            >
-              <Ionicons name="call" size={22} color="#ffffff" style={{ marginRight: 8, transform: [{ rotate: '135deg' }] }} />
-              <Text style={styles.endCallButtonText}>End Call</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.revealButton, { backgroundColor: '#1a1a1a', borderColor: '#ef4444', borderWidth: 1.5 }]}
-              onPress={handleReveal}
-              activeOpacity={0.85}
-              testID="reveal-experiment-button"
-            >
-              <Ionicons name="eye-off-outline" size={22} color="#ef4444" style={{ marginRight: 8 }} />
-              <Text style={[styles.revealButtonText, { color: '#ef4444' }]}>Reveal</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-
-        {!callStarted && (
-          <TouchableOpacity
-            style={[styles.revealButtonFull, { backgroundColor: '#ef4444' }]}
-            onPress={handleReveal}
-            activeOpacity={0.85}
-            testID="reveal-experiment-button"
-          >
-            <Ionicons name="eye-off-outline" size={26} color="#ffffff" style={{ marginRight: 10 }} />
-            <Text style={styles.revealButtonFullText}>{t.revealButton}</Text>
-          </TouchableOpacity>
-        )}
+        <TouchableOpacity
+          style={[styles.revealButtonFull, { backgroundColor: '#ef4444' }]}
+          onPress={handleReveal}
+          activeOpacity={0.85}
+          testID="reveal-experiment-button"
+        >
+          <Ionicons name="eye-off-outline" size={26} color="#ffffff" style={{ marginRight: 10 }} />
+          <Text style={styles.revealButtonFullText}>{t.revealButton}</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -445,23 +325,11 @@ const styles = StyleSheet.create({
     borderWidth: 4,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 12,
   },
   timerText: {
     fontSize: 52,
     fontFamily: 'Inter_700Bold',
     letterSpacing: -2,
-  },
-  speakingIndicator: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-    height: 24,
-  },
-  bar: {
-    width: 5,
-    height: 24,
-    borderRadius: 3,
   },
   statusText: {
     fontSize: 15,
@@ -486,47 +354,18 @@ const styles = StyleSheet.create({
     gap: 14,
     paddingBottom: 16,
   },
-  infoBox: {
+  hintBox: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     padding: 16,
     borderRadius: 12,
     borderWidth: 1,
   },
-  infoText: {
+  hintText: {
     flex: 1,
     fontSize: 14,
     fontFamily: 'Inter_400Regular',
     lineHeight: 22,
-  },
-  errorBanner: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    backgroundColor: '#2d0d0d',
-    borderColor: '#ef4444',
-    borderWidth: 1,
-    borderRadius: 12,
-    padding: 14,
-  },
-  errorBannerText: {
-    fontSize: 13,
-    fontFamily: 'Inter_400Regular',
-    color: '#ef4444',
-    lineHeight: 20,
-  },
-  openTabButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    alignSelf: 'flex-start',
-    backgroundColor: '#ef4444',
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-  },
-  openTabButtonText: {
-    fontSize: 13,
-    fontFamily: 'Inter_600SemiBold',
-    color: '#ffffff',
   },
   callButton: {
     flexDirection: 'row',
@@ -539,35 +378,6 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontFamily: 'Inter_700Bold',
     color: '#ffffff',
-  },
-  callActiveRow: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  endCallButton: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 18,
-    borderRadius: 18,
-  },
-  endCallButtonText: {
-    fontSize: 18,
-    fontFamily: 'Inter_700Bold',
-    color: '#ffffff',
-  },
-  revealButton: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 18,
-    borderRadius: 18,
-  },
-  revealButtonText: {
-    fontSize: 18,
-    fontFamily: 'Inter_700Bold',
   },
   revealButtonFull: {
     flexDirection: 'row',

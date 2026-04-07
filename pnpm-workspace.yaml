@@ -33,6 +33,10 @@ minimumReleaseAgeExclude:
   # this setting guards against does not apply to our own packages.
   - '@replit/*'
   - stripe-replit-sync
+  # ElevenLabs and LiveKit are trusted audio/AI SDK publishers.
+  # All @elevenlabs/* packages had a coordinated v1.x release on 2026-04-06.
+  # Temporarily excluded until the 1-day window passes.
+  - '@elevenlabs/*'
 
 packages:
   - artifacts/*

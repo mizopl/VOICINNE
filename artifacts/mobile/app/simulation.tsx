@@ -21,7 +21,7 @@ import {
   useConversationControls,
   useConversationMode,
   useConversationStatus,
-} from '@elevenlabs/react';
+} from '@elevenlabs/react-native';
 
 const DURATION_SECONDS = 3 * 60;
 

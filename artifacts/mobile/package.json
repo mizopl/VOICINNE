@@ -51,12 +51,16 @@
     "react-native-svg": "15.12.1",
     "react-native-web": "^0.21.0",
     "react-native-worklets": "0.5.1",
+    "@types/dom-mediacapture-record": "^1.0.7",
     "typescript": "~5.9.2",
     "zod": "catalog:",
     "zod-validation-error": "^3.4.0"
   },
   "dependencies": {
-    "@elevenlabs/react": "^1.0.2",
-    "expo-av": "^16.0.8"
+    "@elevenlabs/react-native": "^1.0.3",
+    "@livekit/react-native": "^2.10.0",
+    "@livekit/react-native-webrtc": "^144.0.0",
+    "expo-av": "^16.0.8",
+    "livekit-client": "^2.18.1"
   }
 }

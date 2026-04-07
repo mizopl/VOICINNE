@@ -36,6 +36,32 @@ router.post("/clone-voice", upload.any(), async (req, res) => {
   }
 
   try {
+    // Step 1: Delete all previous voicinne experiment voices to avoid hitting the voice limit
+    try {
+      const listResp = await axios.get<{ voices: Array<{ voice_id: string; name: string }> }>(
+        "https://api.elevenlabs.io/v1/voices",
+        { headers: { "xi-api-key": apiKey } }
+      );
+      const toDelete = listResp.data.voices.filter((v) =>
+        v.name === "voicinne_experiment_voice"
+      );
+      await Promise.all(
+        toDelete.map((v) =>
+          axios
+            .delete(`https://api.elevenlabs.io/v1/voices/${v.voice_id}`, {
+              headers: { "xi-api-key": apiKey },
+            })
+            .catch(() => {})
+        )
+      );
+      if (toDelete.length > 0) {
+        logger.info({ deleted: toDelete.length }, "[voicinne] cleaned up old experiment voices");
+      }
+    } catch (cleanupErr) {
+      logger.warn({ cleanupErr }, "[voicinne] voice cleanup skipped (non-fatal)");
+    }
+
+    // Step 2: Clone the new voice
     const form = new FormData();
     form.append("name", "voicinne_experiment_voice");
 

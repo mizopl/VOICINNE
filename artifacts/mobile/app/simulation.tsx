@@ -19,7 +19,7 @@ import { useColors } from '@/hooks/useColors';
 import {
   ConversationProvider,
   useConversation,
-} from '@elevenlabs/react-native';
+} from '@elevenlabs/react';
 
 const DURATION_SECONDS = 3 * 60;
 

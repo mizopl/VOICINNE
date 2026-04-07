@@ -236,6 +236,9 @@ importers:
 
   artifacts/mobile:
     dependencies:
+      '@elevenlabs/react':
+        specifier: 1.0.3
+        version: 1.0.3(@types/dom-mediacapture-record@1.0.22)(react@19.1.0)
       '@elevenlabs/react-native':
         specifier: ^1.0.3
         version: 1.0.3(@livekit/react-native-webrtc@144.0.0(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0)))(@livekit/react-native@2.10.0(@livekit/react-native-webrtc@144.0.0(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0)))(livekit-client@2.18.1(@types/dom-mediacapture-record@1.0.22))(react-dom@19.1.0(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)(tslib@2.8.1))(@types/dom-mediacapture-record@1.0.22)(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)

@@ -18,7 +18,6 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { LANGUAGE_LABELS, Language, useLanguage } from '@/contexts/LanguageContext';
-import { useColors } from '@/hooks/useColors';
 import { WaveformLine, buildFlatPoints, buildSinePoints } from '@/utils/waveform';
 
 /* ── Constants ───────────────────────────────────────────────── */
@@ -49,7 +48,6 @@ const WAVE_H = 72;
 /* ── Main screen ─────────────────────────────────────────────── */
 
 export default function HomeScreen() {
-  const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { language, setLanguage, t } = useLanguage();

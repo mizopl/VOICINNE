@@ -17,7 +17,6 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useColors } from '@/hooks/useColors';
 import { cloneVoice, createAgent, generatePersona, transcribeAudio } from '@/utils/apiClient';
 import { WaveformLine, buildFlatPoints, buildSinePoints } from '@/utils/waveform';
 
@@ -43,7 +42,6 @@ const PROCESSING_STEPS = [
 type Phase = 'idle' | 'recording' | 'preview' | 'processing';
 
 export default function OnboardingScreen() {
-  const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { t } = useLanguage();

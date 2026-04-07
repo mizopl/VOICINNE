@@ -6,6 +6,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
 import {
   Animated,
+  Linking,
   Platform,
   ScrollView,
   StyleSheet,
@@ -82,8 +83,8 @@ function SimulationContent({
       setCallStarted(false);
       setConnectError(
         Platform.OS === 'web'
-          ? 'Mic blocked in embedded preview. Open the app URL directly in a browser tab to test the call.'
-          : 'Live call requires an EAS development build — Expo Go is missing the native audio module. Build with: eas build --profile development'
+          ? 'Microphone is blocked inside this embedded preview.'
+          : 'Live call requires an EAS development build — Expo Go is missing the native audio module.'
       );
     }
   }, [status]);
@@ -340,8 +341,21 @@ function SimulationContent({
 
         {connectError ? (
           <View style={styles.errorBanner}>
-            <Ionicons name="alert-circle-outline" size={18} color="#ef4444" style={{ marginRight: 8 }} />
-            <Text style={styles.errorBannerText}>{connectError}</Text>
+            <Ionicons name="alert-circle-outline" size={18} color="#ef4444" style={{ marginRight: 8, marginTop: 2 }} />
+            <View style={{ flex: 1, gap: 8 }}>
+              <Text style={styles.errorBannerText}>{connectError}</Text>
+              {Platform.OS === 'web' && (
+                <TouchableOpacity
+                  onPress={() => {
+                    window.open(window.location.href, '_blank');
+                  }}
+                  style={styles.openTabButton}
+                >
+                  <Ionicons name="open-outline" size={14} color="#ffffff" style={{ marginRight: 6 }} />
+                  <Text style={styles.openTabButtonText}>Open in New Tab</Text>
+                </TouchableOpacity>
+              )}
+            </View>
           </View>
         ) : null}
 
@@ -495,11 +509,24 @@ const styles = StyleSheet.create({
     padding: 14,
   },
   errorBannerText: {
-    flex: 1,
     fontSize: 13,
     fontFamily: 'Inter_400Regular',
     color: '#ef4444',
     lineHeight: 20,
+  },
+  openTabButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    backgroundColor: '#ef4444',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+  },
+  openTabButtonText: {
+    fontSize: 13,
+    fontFamily: 'Inter_600SemiBold',
+    color: '#ffffff',
   },
   callButton: {
     flexDirection: 'row',

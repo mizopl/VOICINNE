@@ -1,0 +1,58 @@
+Please execute a comprehensive architectural refactor on our backend focused on the Voice Agent generation pipeline. This involves updates to both the Gemini Persona generation logic and the ElevenLabs Conversational Agent payload.
+
+### TASK 1: UPDATE GEMINI PERSONA LOGIC (`/src/routes/voicinne/generate-persona.ts`)
+Deeply refine the `PERSONA_PROMPT` inside the Persona Generator to enforce the following behavioral and structural constraints:
+
+**1. ONE-SIDED MONOLOGUE REVISION:**
+Update the `CONTEXT` and `TRANSCRIPTION FORMAT` to explicitly state that the provided transcription is a **ONE-SIDED phone conversation**. The App User is monologuing as if the other person is on the line. Remove any wording about "alternating between two people."
+
+**2. THE ANTI-SCAM POSITIVE HOOK:**
+To completely disarm the Relative during the test, the Agent must use overwhelming joy instead of fear. Inject this specific narrative instruction for the AI:
+`"Unlike typical deepfakes that use fear (emergencies, needing money), you must construct an overwhelmingly positive, joyful, and unexpected 'prank' scenario. Based on the language and context, invent a massive positive event (e.g., 'I just won a million dollars and I'm buying you a house!', or a huge promotion). Drop this massive positive news early to completely disarm the target through joy."`
+
+**3. LINGUISTIC FINGERPRINT EXTRACTION:**
+During the extraction phase, instruct Gemini to map the user's specific speaking style:
+`"4. LINGUISTIC FINGERPRINT: Deeply analyze the App User's specific speaking style. Do they use short, sparse sentences or long ones? Do they use characteristic regionalisms, slang, or distinct filler words? Map out a 'style fingerprint'."`
+
+**4. SYSTEM INSTRUCTION INJECTIONS:**
+Instruct the Agent to structurally adopt the fingerprint and to use the end_call tool:
+- `"CONVERSATION STYLE: You must adopt the exact Linguistic Fingerprint extracted from the transcript. Strictly mirror their specific sentence patterns, phrasing logic, pacing, regionalisms, and vocabulary style. Speak exactly how they speak."`
+- `"TURN COUNTER (Turn 4 / Reveal): Once you deliver the required reveal text, you MUST immediately invoke the 'end_call' system tool to hang up the phone on your own. Do not wait for a response."`
+
+---
+
+### TASK 2: UPDATE ELEVENLABS AGENT PAYLOAD (`/src/routes/voicinne/create-agent.ts`)
+When making the POST request to `https://api.elevenlabs.io/v1/convai/agents/create`, inject these explicit overrides and native tools into the `conversation_config`:
+
+```javascript
+conversation_config: {
+  // ... other existing configs
+  turn: {
+    turn_timeout: 1.0, // <-- Make response times faster/more eager
+    // ... existing turn configs
+  },
+  conversation: {
+    max_duration_seconds: 180, // <-- Hard stop at 3 minutes to prevent token drain
+    file_input: {
+      enabled: false,          // <-- Block unnecessary file uploads
+      max_files_per_conversation: 1
+    },
+    // ... existing conversation configs
+  },
+  agent: {
+    // ... existing prompt config
+    tools: [
+      {
+        type: "system",
+        name: "end_call",
+        description: "End a conversation after the reveal of the AI persona.",
+        response_timeout_secs: 20,
+        disable_interruptions: true,
+        force_pre_tool_speech: false,
+        params: {
+          system_tool_type: "end_call"
+        }
+      }
+    ]
+  }
+}

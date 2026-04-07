@@ -84,7 +84,14 @@ export default function OnboardingScreen() {
       duration: 300,
       useNativeDriver: true,
     }).start(() => {
-      setStepIndex((prev) => Math.min(prev + 1, PROCESSING_STEPS.length - 1));
+      setStepIndex((prev) => {
+        const next = Math.min(prev + 1, PROCESSING_STEPS.length - 1);
+        if (next === PROCESSING_STEPS.length - 1 && stepIntervalRef.current) {
+          clearInterval(stepIntervalRef.current);
+          stepIntervalRef.current = null;
+        }
+        return next;
+      });
       Animated.timing(fadeAnim, {
         toValue: 1,
         duration: 400,

@@ -494,8 +494,17 @@ function SimulationContent({
               </View>
             </View>
 
-            {/* Educational disclaimer */}
-            <Text style={[styles.simAiDisclaimerText, { color: '#6b7280' }]}>{t.aiDisclaimer}</Text>
+            {/* Educational disclaimer — warning card */}
+            <View style={[styles.warningCard, { borderColor: '#f59e0b50', backgroundColor: '#f59e0b0d' }]}>
+              <View style={[styles.warningCardAccent, { backgroundColor: '#f59e0b' }]} />
+              <View style={styles.warningCardBody}>
+                <View style={styles.warningCardHeader}>
+                  <Ionicons name="warning-outline" size={15} color="#f59e0b" />
+                  <Text style={[styles.warningCardTitle, { color: '#f59e0b' }]}>IMPORTANT</Text>
+                </View>
+                <Text style={[styles.warningCardText, { color: MUTED }]}>{t.aiDisclaimer}</Text>
+              </View>
+            </View>
           </>
         ) : (
           <View style={styles.activeControls}>
@@ -674,6 +683,36 @@ const styles = StyleSheet.create({
     lineHeight: 17,
     textAlign: 'center',
     paddingHorizontal: 4,
+  },
+  warningCard: {
+    flexDirection: 'row',
+    borderWidth: 1,
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  warningCardAccent: {
+    width: 4,
+  },
+  warningCardBody: {
+    flex: 1,
+    paddingHorizontal: 12,
+    paddingVertical: 11,
+    gap: 5,
+  },
+  warningCardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  warningCardTitle: {
+    fontSize: 11,
+    fontFamily: 'Inter_700Bold',
+    letterSpacing: 1.2,
+  },
+  warningCardText: {
+    fontSize: 12,
+    fontFamily: 'Inter_400Regular',
+    lineHeight: 18,
   },
 
   // Error

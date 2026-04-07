@@ -32,7 +32,7 @@ const PROCESSING_STEPS = [
   'Building deep fake persona...',
   'Configuring conversational AI agent...',
   'Finalizing neural bridge...',
-  'Taking longer than expected, holding connection...',
+  'Synchronizing voice identity...',
 ];
 
 type Phase = 'idle' | 'recording' | 'preview' | 'processing';
@@ -84,14 +84,7 @@ export default function OnboardingScreen() {
       duration: 300,
       useNativeDriver: true,
     }).start(() => {
-      setStepIndex((prev) => {
-        const next = Math.min(prev + 1, PROCESSING_STEPS.length - 1);
-        if (next === PROCESSING_STEPS.length - 1 && stepIntervalRef.current) {
-          clearInterval(stepIntervalRef.current);
-          stepIntervalRef.current = null;
-        }
-        return next;
-      });
+      setStepIndex((prev) => (prev + 1) % PROCESSING_STEPS.length);
       Animated.timing(fadeAnim, {
         toValue: 1,
         duration: 400,
@@ -308,8 +301,6 @@ export default function OnboardingScreen() {
   };
 
   if (phase === 'processing') {
-    const isLastStep = stepIndex === PROCESSING_STEPS.length - 1;
-    const stepLabel = isLastStep ? '' : `Step ${stepIndex + 1} of ${PROCESSING_STEPS.length - 1}`;
     return (
       <View
         style={[styles.container, styles.centered, {
@@ -329,11 +320,6 @@ export default function OnboardingScreen() {
           >
             {PROCESSING_STEPS[stepIndex]}
           </Animated.Text>
-          {stepLabel ? (
-            <Text style={[styles.processingStepLabel, { color: colors.mutedForeground }]}>
-              {stepLabel}
-            </Text>
-          ) : null}
         </View>
       </View>
     );

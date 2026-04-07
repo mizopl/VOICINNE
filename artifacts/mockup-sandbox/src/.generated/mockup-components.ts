@@ -4,5 +4,6 @@ export const modules: ModuleMap = {
   "./components/mockups/voicinne-home/ChallengeFlow.tsx": () => import("../components/mockups/voicinne-home/ChallengeFlow.tsx"),
   "./components/mockups/voicinne-home/CinematicMinimal.tsx": () => import("../components/mockups/voicinne-home/CinematicMinimal.tsx"),
   "./components/mockups/voicinne-home/ClassifiedIntel.tsx": () => import("../components/mockups/voicinne-home/ClassifiedIntel.tsx"),
+  "./components/mockups/voicinne-home/StatWaveform.tsx": () => import("../components/mockups/voicinne-home/StatWaveform.tsx"),
   "./components/mockups/voicinne-home/TheStatLead.tsx": () => import("../components/mockups/voicinne-home/TheStatLead.tsx")
 };

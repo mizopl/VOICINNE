@@ -57,7 +57,8 @@ router.post("/create-agent", async (req, res) => {
           turn: {
             turn_timeout: 1.0,
             mode: "turn",
-            turn_eagerness: "eager",
+            turn_eagerness: "high",
+            speculative_turn: true,
           },
           conversation: {
             max_duration_seconds: 180,
@@ -65,12 +66,10 @@ router.post("/create-agent", async (req, res) => {
           tts: {
             model_id: "eleven_flash_v2_5",
             voice_id,
-            expressive_mode: false,
             optimize_streaming_latency: 4,
             stability: 0.2,
             speed: 1.0,
             similarity_boost: 1.0,
-            text_normalisation_type: "elevenlabs",
           },
           agent: {
             first_message: first_message || undefined,
@@ -79,7 +78,6 @@ router.post("/create-agent", async (req, res) => {
               prompt: system_prompt,
               llm: "gemini-2.5-flash",
               temperature: 1.0,
-              ignore_default_personality: true,
               tools: [
                 {
                   type: "system",

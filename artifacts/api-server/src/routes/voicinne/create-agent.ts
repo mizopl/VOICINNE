@@ -58,17 +58,25 @@ router.post("/create-agent", async (req, res) => {
             turn_timeout: 1.0,
             mode: "turn",
             turn_eagerness: "eager",
+            spelling_patience: "off",
             speculative_turn: true,
           },
           conversation: {
             max_duration_seconds: 180,
+            file_input: {
+              enabled: false,
+              max_files_per_conversation: 1,
+            },
           },
           tts: {
-            model_id: resolvedLang === "en" ? "eleven_flash_v2" : "eleven_flash_v2_5",
+            model_id: "eleven_flash_v2_5",
             voice_id,
+            expressive_mode: false,
+            optimize_streaming_latency: 4,
             stability: 0.2,
             speed: 1.0,
             similarity_boost: 1.0,
+            text_normalisation_type: "elevenlabs",
           },
           agent: {
             first_message: first_message || undefined,
@@ -77,6 +85,7 @@ router.post("/create-agent", async (req, res) => {
               prompt: system_prompt,
               llm: "gemini-2.5-flash",
               temperature: 1.0,
+              ignore_default_personality: true,
               tools: [
                 {
                   type: "system",
@@ -120,16 +129,10 @@ router.post("/create-agent", async (req, res) => {
     );
 
     res.json({ agent_id, reveal_message: reveal_message ?? "" });
-  } catch (err: unknown) {
-    const axiosErr = err as { response?: { status?: number; data?: unknown }; message?: string };
-    const responseBody = axiosErr?.response?.data;
-    const responseStatus = axiosErr?.response?.status;
+  } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    logger.error(
-      { err, elevenLabsStatus: responseStatus, elevenLabsBody: responseBody },
-      "[voicinne] create-agent failed"
-    );
-    res.status(502).json({ error: "Agent creation failed", details: message, elevenLabsBody: responseBody });
+    logger.error({ err }, "[voicinne] create-agent failed");
+    res.status(502).json({ error: "Agent creation failed", details: message });
   }
 });
 

@@ -64,9 +64,8 @@ router.post("/create-agent", async (req, res) => {
             max_duration_seconds: 180,
           },
           tts: {
-            model_id: "eleven_flash_v2_5",
+            model_id: resolvedLang === "en" ? "eleven_flash_v2" : "eleven_flash_v2_5",
             voice_id,
-            optimize_streaming_latency: 4,
             stability: 0.2,
             speed: 1.0,
             similarity_boost: 1.0,

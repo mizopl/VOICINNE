@@ -6,6 +6,10 @@
 
 ---
 
+### Built with Antigravity as a companion (a word from Gemini)
+- **Dual-Agent Architecture:** While Replit deployed the infrastructure, a specialized AI Agent ("Antigravity") acted as the CTO, parsing ElevenLabs JSON diffs and strictly enforcing prompt safety, linguistic boundaries, and API integrations.
+
+
 ## What is Voicinne?
 
 Voicinne is a dual-platform app (Expo mobile + React web) that guides a user through a live psychological experiment. Here is the full arc:

@@ -85,6 +85,7 @@ router.post("/create-agent", async (req, res) => {
               prompt: system_prompt,
               llm: "gemini-2.5-flash",
               temperature: 1.0,
+              ignore_default_personality: true,
               tools: [
                 {
                   type: "system",

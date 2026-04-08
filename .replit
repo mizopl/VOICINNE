@@ -29,4 +29,4 @@ timeoutMs = 20000
 
 [userenv.shared]
 ELEVENLABS_API_KEY = "sk_9e66962afc02e62c924924ddf16782f25c4e1d62c3d24093"
-GEMINI_API_KEY = "AIzaSyBBnZu_T8pJNRj_LuMtViy931ebMazORn4"
+GEMINI_API_KEY = "AIzaSyCWb6b5YbS9-9wlbTtA3CaEDZTucHfbbhs"

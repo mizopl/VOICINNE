@@ -57,7 +57,7 @@ router.post("/create-agent", async (req, res) => {
           turn: {
             turn_timeout: 1.0,
             mode: "turn",
-            turn_eagerness: "high",
+            turn_eagerness: "eager",
             speculative_turn: true,
           },
           conversation: {

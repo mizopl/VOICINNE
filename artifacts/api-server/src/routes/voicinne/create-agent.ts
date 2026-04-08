@@ -69,13 +69,13 @@ router.post("/create-agent", async (req, res) => {
             },
           },
           tts: {
-            model_id: "eleven_v3_conversational",
+            model_id: "eleven_flash_v2_5",
             voice_id,
-            expressive_mode: true,
+            expressive_mode: false,
             optimize_streaming_latency: 4,
             stability: 0.2,
-            speed: 1.11,
-            similarity_boost: 0.74,
+            speed: 1.0,
+            similarity_boost: 1.0,
             text_normalisation_type: "elevenlabs",
           },
           agent: {

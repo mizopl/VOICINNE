@@ -122,7 +122,7 @@ router.post("/generate-persona", async (req, res) => {
     const personaPrompt = buildPersonaPrompt(durationSeconds);
 
     const response = await ai.models.generateContent({
-      model: "gemini-3.1-pro-preview",
+      model: "gemini-2.5-flash",
       contents: `${personaPrompt}\n\nApp User transcription facts:\n${transcription}`,
       config: {
         responseMimeType: "application/json",
@@ -133,7 +133,12 @@ router.post("/generate-persona", async (req, res) => {
     logger.info({ rawGeminiOutput: raw }, "[voicinne] FULL GEMINI RAW OUTPUT");
     let persona: unknown;
     try {
-      persona = JSON.parse(raw);
+      const jsonStart = raw.indexOf('{');
+      const jsonEnd = raw.lastIndexOf('}');
+      const cleanJson = jsonStart !== -1 && jsonEnd > jsonStart
+        ? raw.slice(jsonStart, jsonEnd + 1)
+        : raw;
+      persona = JSON.parse(cleanJson);
     } catch {
       persona = { raw };
     }

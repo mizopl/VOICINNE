@@ -128,7 +128,17 @@ Outcome: identical amber warning cards with the educational disclaimer on every 
 
 ---
 
-### 4. Synchronising Content Across Platforms
+### 4. Standardising Disclaimer Text Across Six Languages
+
+Once the warning card pattern was locked in, the disclaimer copy inside it needed to match exactly across every language:
+
+> *"Standardize disclaimer text across all 6 languages: 'Educational Purpose Only: This app uses advanced Voice AI to teach cybersecurity. Audio recordings can be stored securely for educational and security audit purposes.'"*
+
+The agent updated `consentText` and `aiDisclaimer` in all six language dictionaries (both mobile and web `LanguageContext` files) in a single pass, using the English source as the canonical reference.
+
+---
+
+### 5. Synchronising Content Across Platforms
 
 When the reveal screen body text drifted between mobile and web (the web was showing Gemini's AI-generated persona message instead of the fixed educational text), the fix prompt used the working surface as the reference:
 
@@ -138,7 +148,7 @@ This also caught that the non-English translations in the web language file were
 
 ---
 
-### 5. Responsive Layout
+### 6. Responsive Layout
 
 > *"On vertical screens I want to show the web app without the phone mockup, the phone mockup just on horizontal screens."*
 
@@ -146,7 +156,7 @@ The agent implemented a `useIsLandscape()` hook using `window.matchMedia('(orien
 
 ---
 
-### 6. TTS Upgrade
+### 7. TTS Upgrade
 
 > *"Upgrade the voice generation engine to the much lower latency 'Flash v2.5' model. Switch model_id to eleven_flash_v2_5, disable expressive_mode, set similarity_boost to 1.0, speed to 1.0."*
 
@@ -154,7 +164,7 @@ The `create-agent.ts` TTS block was updated from `eleven_v3_conversational` to `
 
 ---
 
-### 7. Stripping ElevenLabs' Default Personality
+### 8. Stripping ElevenLabs' Default Personality
 
 > *"Add `ignore_default_personality: true` inside `conversation_config.agent.prompt` — ElevenLabs injects a generic helpful AI persona that dilutes our custom deepfake character."*
 
